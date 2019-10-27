@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Triton Meet</string>
+    <string name="button_label_login">Login</string>
+    <string name="text_name_register">Register</string>
+    <string name="text_name_forgot">Forgot password?</string>
+    <string name="hint_name_email">Email</string>
+    <string name="hint_name_pass">Password</string>
+</resources>
