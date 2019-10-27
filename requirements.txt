@@ -1,0 +1,8 @@
+psycopg2==2.8.4
+
+argon2-cffi==19.1.0
+
+falcon==2.0.0
+json==2.0.9
+
+gunicorn==19.9.0
