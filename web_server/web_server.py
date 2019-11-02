@@ -42,7 +42,7 @@ class CreateUser(object):
                 con.commit()
 
             resp.status = falcon.HTTP_201
-            resp.media = json.dumps({"message": "User created"})
+            resp.body = json.dumps({"message": "User created"})
 
 api = falcon.API()
 createuser_endpoint = CreateUser()
