@@ -27,13 +27,13 @@ class CreateUser(object):
             resp.status = falcon.HTTP_401
             resp.media = {"message": "Passwords are not the same"}
         else:
-            con = psycopg2.connect(credentials)            
-            hasher = PasswordHasher()
-            
-            salt = str(base64.standard_b64encode(secrets.token_bytes(32)))
-            hash = hasher.hash(password + salt)
-
+            con = psycopg2.connect(credentials)
             with con:
+                hasher = PasswordHasher()
+                
+                salt = str(base64.standard_b64encode(secrets.token_bytes(32)))
+                hash = hasher.hash(password + salt)
+                
                 cur = con.cursor()
                 cur.execute("""
                             insert into user_info(email,full_name,salt,hash)
@@ -42,7 +42,7 @@ class CreateUser(object):
                 con.commit()
 
             resp.status = falcon.HTTP_201
-            resp.media = {"message": "User created"}
+            resp.media = json.dumps({"message": "User created"})
 
 api = falcon.API()
 createuser_endpoint = CreateUser()
