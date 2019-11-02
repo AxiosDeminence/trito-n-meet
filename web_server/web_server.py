@@ -35,9 +35,9 @@ class CreateUser(object):
 
             """with con:
                 cur = con.cursor()
-                cur.execute("""
+                cur.execute(\"\"\"
                             insert into user_info(email,full_name,salt,hash)
-                                values(%s, %s, %s, %s);""",
+                                values(%s, %s, %s, %s);\"\"\",
                             [email, fullname, salt, hash])
                 con.commit()"""
 
