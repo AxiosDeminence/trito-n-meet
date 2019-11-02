@@ -33,13 +33,13 @@ class CreateUser(object):
             salt = base64.standard_b64encode(secrets.token_bytes(32))
             hash = hasher.hash(password + salt)
 
-            with con:
+            """with con:
                 cur = con.cursor()
                 cur.execute("""
                             insert into user_info(email,full_name,salt,hash)
                                 values(%s, %s, %s, %s);""",
                             [email, fullname, salt, hash])
-                con.commit()
+                con.commit()"""
 
             resp.status = falcon.HTTP_201
             resp.media = {"message": "User created"}
