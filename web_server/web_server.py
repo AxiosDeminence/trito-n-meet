@@ -35,11 +35,11 @@ class CreateUser(object):
 
             with con:
                 cur = con.cursor()
-                cur.execute("insert into user_info(email,full_name,salt,hash)
-                                values(%s, %s, %s, %s,",
+                cur.execute("""
+                            insert into user_info(email,full_name,salt,hash)
+                                values(%s, %s, %s, %s);""",
                             [email, fullname, salt, hash])
-            con.commit()
-            con.close()
+                con.commit()
 
             resp.status = falcon.HTTP_201
             resp.media = {"message": "User created"}
