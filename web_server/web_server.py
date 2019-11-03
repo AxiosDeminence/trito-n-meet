@@ -100,8 +100,8 @@ class UserLogin(object):
             resp.media = {"message": "User does not exist"}
             return
         
-        print(user_info)    
         hash = hasher.hash(password + user_info[0])
+        print(hash + " != " user_info[1])
         
         if hash != user_info[1]:
             resp.status = falcon.HTTP_401
