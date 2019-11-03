@@ -33,8 +33,10 @@ class CreateUser(object):
             resp.status = falcon.HTTP_406
             resp.media = {"message": "Passwords are not the same"}
             return
-        elif not (re.match(r'[A-Z]') or re.match(r'[a-z]') or
-                  re.match(r'[0-9]') or re.match(r'[!@#$%^&*()]')):
+        elif not (re.match(r'[A-Z]', password)
+                  or re.match(r'[a-z]', password)
+                  or re.match(r'[0-9]', password)
+                  or re.match(r'[!@#$%^&*()]')):
             resp.status = falcon.HTTP_406
             resp.media = {"message": "Does not meet password complexity"}
             return
