@@ -20,13 +20,13 @@ credentials = ("dbname=%s user=%s password=%s host=%s port=%s"
 class CreateUser(object):
     def on_post(self, req, resp):
         try:
-            email = strip(req.media.get("email"))
-            full_name = strip(req.media.get("fullName"))
-            password = strip(req.media.get("password"))
-            confirm_password = strip(req.media.get("confirmPassword"))
+            email = str.strip(req.media.get("email"))
+            full_name = str.strip(req.media.get("fullName"))
+            password = str.strip(req.media.get("password"))
+            confirm_password = str.strip(req.media.get("confirmPassword"))
         except KeyError:
             resp.status = falcon.HTTP_400
-            resp.media = {"message": "Not all forms filled"}
+            resp.media = {"message": "JSON Format Error"}
             return
         
         if password != confirm_password:
@@ -71,11 +71,11 @@ class CreateUser(object):
 class UserLogin(object):
     def on_post(self, req, resp):
         try:
-            email = strip(req.media.get("email"))
-            password = strip(req.media.get("password"))
+            email = str.strip(req.media.get("email"))
+            password = str.strip(req.media.get("password"))
         except KeyError:
             resp.status = falcon.HTTP_400
-            resp.media = {"message": "Not all forms filled"}
+            resp.media = {"message": "JSON Format Error"}
             return
 
         hasher = PasswordHasher()
@@ -108,6 +108,76 @@ class UserLogin(object):
         
         resp.status = falcon.HTTP_201
         resp.media = {"message": "User logged in"}
+
+class ManageEvents(object):
+    def on_get(self, req, resp): # Ask for all events of a user
+        try:
+            user = str.strip(req.media.get("email"))
+        except KeyError:
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Form Error"}
+            return
+        
+        try:
+            con = psycopg2.connect(credentials)
+            with con:
+                cur = con.cursor()
+                cur.execute("""
+                            select * from events
+                                where owner_email = %s""",
+                            [user])
+                events = cur.fetchall()
+        except psycopg2.OperationalError:
+            resp.status = falcon.HTTP_503
+            resp.media = {"message": "Connection terminated"}
+            return
+        except psycopg2.ProgrammingError:
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "User does not exist"}
+            return
+
+        resp.status = falcon.HTTP_201
+        resp.media = events
+    
+    def on_post(self, req, resp): # Will include edit and create
+        try:
+            action = str.strip(req.media.get("action"))
+
+            if action == "edit" or action == "delete":
+                event_id = str.strip(req.media.get("eventId"))
+            elif action == "create":
+                pass
+            else:
+                raise KeyError("Neither editing nor creating")
+            
+            user = str.strip(req.media.get("email"))
+            event_name = str.strip(req.media.get("eventName"))
+            start_time = str.strip(req.media.get("startTime"))
+            end_time = str.strip(req.media.get("endTime"))
+            start_date = str.strip(req.media.get("startDate"))
+            end_date = str.strip(req.media.get("endDate"))
+            days_of_week = str.strip(req.media.get("daysOfWeek"))
+        except KeyError:
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Form Error"}
+        
+        try:
+            con = psycopg2.connect(credentials)
+            
+            with con:
+                cur = con.cursor()
+                if action == "edit":
+                    cur.execute("""
+                                update events set event_name=%s, start_time=%s,
+                                                  end_time=%s, start_date=%s,
+                                                  end_date=%s, days_of_week=%s
+                                    where event_id = %s and owner_email=%s""",
+                                [event_name, start_time, end_time, start_date,
+                                 end_date, days_of_week, event_id, user])
+        except psycopg2.OperationalError: 
+            resp.status = falcon.HTTP_503
+            resp.media = {"message": "Connection terminated"}
+                 
 
 api = falcon.API()
 createuser_endpoint = CreateUser()
