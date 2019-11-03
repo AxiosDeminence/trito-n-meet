@@ -89,8 +89,7 @@ class UserLogin(object):
                 cur = con.cursor()
                 cur.execute("""
                             select salt, hash from user_info
-                                where email = %s;
-                            """, [email])
+                                where email = %s;""", [email])
                 user_info = cur.fetchone()
         except psycopg2.OperationalError:
             resp.status = falcon.HTTP_503
@@ -100,12 +99,13 @@ class UserLogin(object):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "User does not exist"}
             return
-            
+        
+        print(user_info)    
         hash = hasher.hash(password + user_info[0])
         
         if hash != user_info[1]:
             resp.status = falcon.HTTP_401
-            resp.media = {"message": "Passwords do not match"}
+            resp.media = {"message": "Incorrect password"}
             return
         
         resp.status = falcon.HTTP_201
@@ -173,13 +173,35 @@ class ManageEvents(object):
                                 update events set event_name=%s, start_time=%s,
                                                   end_time=%s, start_date=%s,
                                                   end_date=%s, days_of_week=%s
-                                    where event_id = %s and owner_email=%s""",
+                                    where event_id = %s and owner_email=%s;""",
                                 [event_name, start_time, end_time, start_date,
                                  end_date, days_of_week, event_id, user])
+                elif action == "create":
+                    cur.execute("""
+                                insert into user_info(owner_email, event_name,
+                                                      start_time, end_time,
+                                                      start_date, end_date,
+                                                      days_of_week)
+                                    values(%s,%s,%s,%s,%s,%s);""",
+                                [event_name, start_time, end_time, start_date,
+                                 end_date, days_of_week])
+                elif action == "delete":
+                    cur.execute("""
+                                delete from user_info
+                                    where event_id = %s and owner_email=%s;""",
+                                [event_id, owner_email])
+                con.commit()
         except psycopg2.OperationalError: 
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
-                 
+            return
+        except psycopg2.ProgrammingError:
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "Event does not exist"}
+            return
+        
+        resp.status = falcon.HTTP_201
+        resp.media = {"message": "Event managed successfully"}
 
 api = falcon.API()
 createuser_endpoint = CreateUser()
