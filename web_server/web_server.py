@@ -67,6 +67,7 @@ class CreateUser(object):
         except psycopg2.errors.UniqueViolation:
             resp.status = falcon.HTTP_406
             resp.media = {"message": "User already exists"}
+            return
 
         resp.status = falcon.HTTP_201
         resp.media = {"message": "User created"}
