@@ -1,7 +1,6 @@
 import psycopg2
 import base64
 
-import secrets
 from argon2 import PasswordHasher
 
 import falcon
@@ -50,17 +49,16 @@ class CreateUser(object):
             return
 
         hasher = PasswordHasher()
-        salt = str(base64.standard_b64encode(secrets.token_bytes(32)))
-        hash = hasher.hash(password + salt)
+        hash = hasher.hash(password)
 
         try:
             con = psycopg2.connect(credentials)
             with con:
                 cur = con.cursor()
                 cur.execute("""
-                            insert into user_info(email,full_name,salt,hash)
-                                values(%s, %s, %s, %s);""",
-                            [email, full_name, salt, hash])
+                            insert into user_info(email, full_name, hash)
+                                values(%s, %s, %s);""",
+                            [email, full_name, hash])
                 con.commit()
         except psycopg2.OperationalError:
             resp.status = falcon.HTTP_503
@@ -88,7 +86,7 @@ class UserLogin(object):
             with con:
                 cur = con.cursor()
                 cur.execute("""
-                            select salt, hash from user_info
+                            select hash from user_info
                                 where email = %s;""", [email])
                 user_info = cur.fetchone()
         except psycopg2.OperationalError:
@@ -100,10 +98,9 @@ class UserLogin(object):
             resp.media = {"message": "User does not exist"}
             return
         
-        hash = hasher.hash(password + user_info[0])
-        print(hash + " != " + user_info[1])
-        
-        if hash != user_info[1]:
+        try:
+            hasher.verify(user_info[0], password)
+        except argon2.exceptions.VerifyMisMatchError:
             resp.status = falcon.HTTP_401
             resp.media = {"message": "Incorrect password"}
             return
