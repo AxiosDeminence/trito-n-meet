@@ -64,6 +64,9 @@ class CreateUser(object):
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
             return
+        except psycopg2.errors.UniqueViolation:
+            resp.status = falcon.HTTP_406
+            resp.media = {"message": "User already exists"}
 
         resp.status = falcon.HTTP_201
         resp.media = {"message": "User created"}
@@ -203,5 +206,7 @@ class ManageEvents(object):
 api = falcon.API()
 createuser_endpoint = CreateUser()
 userlogin_endpoint = UserLogin()
+manageevents_endpoint = ManageEvents()
 api.add_route("/createUser", createuser_endpoint)
 api.add_route("/loginUser", userlogin_endpoint)
+api.add_route("/manageEvents", manageevents_endpoint)
