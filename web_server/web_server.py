@@ -1,9 +1,6 @@
-import psycopg2
-import base64
-
-from argon2 import PasswordHasher
-
 import falcon
+import psycopg2
+from argon2 import PasswordHasher
 
 import re
 
@@ -43,7 +40,7 @@ class CreateUser(object):
             resp.status = falcon.HTTP_406
             resp.media = {"mesage": "Password not of correct length"}
             return
-        elif email[len(email) - 9:] != "@ucsd.edu":
+        elif not email.endswith("@ucsd.edu"):
             resp.status = falcon.HTTP_406
             resp.media = {"message": "Not a valid ucsd email"}
             return
