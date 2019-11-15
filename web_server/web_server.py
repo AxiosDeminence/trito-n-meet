@@ -139,9 +139,8 @@ class ManageEvents():
         keys = ["eventID", "email", "eventName", "startTime", "endTime",
                 "startDate", "endDate", "daysOfWeek"]
             
-        events = [dict((key, value) for key, value in zip(x, keys))
+        events = [dict((key, value) for key, value in zip(keys, x))
                                     for x in events]
-        print(events)
 
         for x in events:
             x["startTime"] = x["startTime"].strftime("%I:%M")
