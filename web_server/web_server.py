@@ -142,8 +142,8 @@ class ManageEvents():
         events = [dict((key, value) for key, value in zip(x, keys))
                                     for x in events]
 
-        events = [x[3].strftime("%I:%M") for x in events]
-        events = [x[4].strftime("%I:%M") for x in events]
+        events = [x["startTime"].strftime("%I:%M") for x in events]
+        events = [x["endTime"].strftime("%I:%M") for x in events]
 
         resp.status = falcon.HTTP_200
         resp.media = events
