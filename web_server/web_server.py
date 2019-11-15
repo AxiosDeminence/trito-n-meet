@@ -135,9 +135,17 @@ class ManageEvents():
             resp.status = falcon.HTTP_400
             resp.media = {"message": "User does not exist"}
             return
+        
+        keys = ["eventID", "email", "eventName", "startTime", "endTime",
+                "startDate", "endDate", "daysOfWeek"]
+        for x in events:
+            
+        events = [list(x) for x in events]
+        events = [dict((key, value) for key, value in zip(x, keys))
+                                    for x in events]
 
+        events = [x[3].strftime("%I:%M") for x in events]
         events = [x[4].strftime("%I:%M") for x in events]
-        events = [x[5].strftime("%I:%M") for x in events]
 
         resp.status = falcon.HTTP_200
         resp.media = events
