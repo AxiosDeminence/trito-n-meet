@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Triton Meet</string>
+    <string name="button_label_login">Login</string>
+    <string name="text_name_register">Register</string>
+    <string name="text_name_forgot">Forgot password?</string>
+    <string name="hint_name_email">Email</string>
+    <string name="hint_name_pass">Password</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="cpassword">Confirm password</string>
+    <string name="fullname">Full Name</string>
+    <string name="register">Register</string>
+    <string name="check1">Placeholder 2</string>
+    <string name="usercheck1">Placeholder 1</string>
+    <string name="emailcheck1">Placeholder 2</string>
+    <string name="passwordcheck1">Placeholder 3</string>
+    <string name="passCheck">At least 6 characters with at least 1: uppercase, lowercase, number, symbol</string>
+    <string name="emailCheck2">Email Check</string>
+    <string name="view">View</string>
+    <string name="invite">Invite</string>
+    <string name="leave">Leave</string>
+    <string name="delete">Delete</string>
+</resources>
