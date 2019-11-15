@@ -157,7 +157,7 @@ class ManageEvents():
             user = str.strip(req.media.get("email"))
 
             if action in ("delete", "edit"):
-                event_id = str.strip(req.media.get("eventID"))
+                event_id = req.media.get("eventID")
             if action in ("edit", "create"):
                 event_name = str.strip(req.media.get("eventName"))
                 start_time = str.strip(req.media.get("startTime"))
