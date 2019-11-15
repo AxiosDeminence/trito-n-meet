@@ -138,7 +138,6 @@ class ManageEvents():
         
         keys = ["eventID", "email", "eventName", "startTime", "endTime",
                 "startDate", "endDate", "daysOfWeek"]
-        for x in events:
             
         events = [dict((key, value) for key, value in zip(x, keys))
                                     for x in events]
