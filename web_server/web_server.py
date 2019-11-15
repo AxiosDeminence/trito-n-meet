@@ -155,7 +155,7 @@ class ManageEvents():
             start_time = str.strip(req.media.get("startTime"))
             end_time = str.strip(req.media.get("endTime"))
             start_date = str.strip(req.media.get("startDate"))
-            end_date = str.strip(req.media.get("endDate"))
+            end_date = list(map(str.strip, req.media.get("endDate")))
             days_of_week = str.strip(req.media.get("daysOfWeek"))
         except KeyError:
             resp.status = falcon.HTTP_400
