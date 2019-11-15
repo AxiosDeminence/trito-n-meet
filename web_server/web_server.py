@@ -155,20 +155,18 @@ class ManageEvents():
         try:
             action = str.strip(req.media.get("action"))
 
-            if action in ("edit", "delete"):
+            if action in ("delete", "edit"):
                 event_id = str.strip(req.media.get("eventId"))
-            elif action == "create":
-                pass
-            else:
+            if action in ("edit", "create"):
+                user = str.strip(req.media.get("email"))
+                event_name = str.strip(req.media.get("eventName"))
+                start_time = str.strip(req.media.get("startTime"))
+                end_time = str.strip(req.media.get("endTime"))
+                start_date = str.strip(req.media.get("startDate"))
+                end_date = str.strip(req.media.get("endDate"))
+                days_of_week = list(map(str.strip, req.media.get("daysOfWeek")))
+            if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
-
-            user = str.strip(req.media.get("email"))
-            event_name = str.strip(req.media.get("eventName"))
-            start_time = str.strip(req.media.get("startTime"))
-            end_time = str.strip(req.media.get("endTime"))
-            start_date = str.strip(req.media.get("startDate"))
-            end_date = str.strip(req.media.get("endDate"))
-            days_of_week = list(map(str.strip, req.media.get("daysOfWeek")))
         except KeyError:
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
@@ -184,9 +182,9 @@ class ManageEvents():
                                 update events set event_name=%s, start_time=%s,
                                                   end_time=%s, start_date=%s,
                                                   end_date=%s, days_of_week=%s
-                                    where event_id = %s and owner_email=%s;""",
+                                    where event_id = %s;""",
                                 [event_name, start_time, end_time, start_date,
-                                 end_date, days_of_week, event_id, user])
+                                 end_date, days_of_week, event_id])
                 elif action == "create":
                     cur.execute("""
                                 insert into events(owner_email, event_name,
