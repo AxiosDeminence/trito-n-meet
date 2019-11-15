@@ -20,7 +20,7 @@ class CreateUser():
             full_name = str.strip(req.media.get("fullName"))
             password = str.strip(req.media.get("password"))
             confirm_password = str.strip(req.media.get("confirmPassword"))
-        except KeyError:
+        except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Format Error"}
             return
@@ -74,7 +74,7 @@ class UserLogin():
         try:
             email = str.strip(req.media.get("email"))
             password = str.strip(req.media.get("password"))
-        except KeyError:
+        except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Format Error"}
             return
@@ -113,7 +113,7 @@ class ManageEvents():
     def on_get(self, req, resp): # Ask for all events of a user
         try:
             user = str.strip(req.media.get("email"))
-        except KeyError:
+        except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
             return
@@ -154,11 +154,11 @@ class ManageEvents():
     def on_post(self, req, resp): # Will include edit and create
         try:
             action = str.strip(req.media.get("action"))
+            user = str.strip(req.media.get("email"))
 
             if action in ("delete", "edit"):
                 event_id = str.strip(req.media.get("eventId"))
             if action in ("edit", "create"):
-                user = str.strip(req.media.get("email"))
                 event_name = str.strip(req.media.get("eventName"))
                 start_time = str.strip(req.media.get("startTime"))
                 end_time = str.strip(req.media.get("endTime"))
@@ -167,7 +167,7 @@ class ManageEvents():
                 days_of_week = list(map(str.strip, req.media.get("daysOfWeek")))
             if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
-        except KeyError:
+        except (TypeError, KeyError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
             return
@@ -182,9 +182,9 @@ class ManageEvents():
                                 update events set event_name=%s, start_time=%s,
                                                   end_time=%s, start_date=%s,
                                                   end_date=%s, days_of_week=%s
-                                    where event_id = %s;""",
+                                    where event_id = %s and owner_email=%s;""",
                                 [event_name, start_time, end_time, start_date,
-                                 end_date, days_of_week, event_id])
+                                 end_date, days_of_week, event_id, user])
                 elif action == "create":
                     cur.execute("""
                                 insert into events(owner_email, event_name,
@@ -216,7 +216,7 @@ def ManageGroups():
     def on_get(self, req, resp):
         try:
             user = str.strip(req.media.get("email"))
-        except KeyError:
+        except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
 
@@ -267,7 +267,7 @@ def ManageGroups():
                 users = map(str.strip, req.media.get("users"))
             if action in ("join", "remove"):
                 member_email = str.strip(req.media.get("email"))
-        except (KeyError, AssertionError):
+        except (KeyError, AssertionError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
             return
