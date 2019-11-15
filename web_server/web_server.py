@@ -140,7 +140,6 @@ class ManageEvents():
                 "startDate", "endDate", "daysOfWeek"]
         for x in events:
             
-        events = [list(x) for x in events]
         events = [dict((key, value) for key, value in zip(x, keys))
                                     for x in events]
 
