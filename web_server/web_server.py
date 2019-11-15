@@ -177,7 +177,7 @@ class ManageEvents():
                                  end_date, days_of_week, event_id, user])
                 elif action == "create":
                     cur.execute("""
-                                insert into user_info(owner_email, event_name,
+                                insert into events(owner_email, event_name,
                                                       start_time, end_time,
                                                       start_date, end_date,
                                                       days_of_week)
@@ -186,7 +186,7 @@ class ManageEvents():
                                  start_date, end_date, days_of_week])
                 elif action == "delete":
                     cur.execute("""
-                                delete from user_info
+                                delete from events
                                     where event_id = %s and owner_email=%s;""",
                                 [event_id, user])
                 con.commit()
