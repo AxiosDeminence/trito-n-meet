@@ -136,6 +136,9 @@ class ManageEvents():
             resp.media = {"message": "User does not exist"}
             return
 
+        events = [x[4].strftime("%I:%M") for x in events]
+        events = [x[5].strftime("%I:%M") for x in events]
+
         resp.status = falcon.HTTP_200
         resp.media = events
 
