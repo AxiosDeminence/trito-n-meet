@@ -141,6 +141,7 @@ class ManageEvents():
             
         events = [dict((key, value) for key, value in zip(x, keys))
                                     for x in events]
+        print(events)
 
         for x in events:
             x["startTime"] = x["startTime"].strftime("%I:%M")
