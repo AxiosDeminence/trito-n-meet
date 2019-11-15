@@ -145,6 +145,8 @@ class ManageEvents():
         for x in events:
             x["startTime"] = x["startTime"].strftime("%I:%M")
             x["endTime"] = x["endTime"].strftime("%I:%M")
+            x["startDate"] = x["startDate"].strftime("%m/%d/%Y")
+            x["endDate"] = x["endDate"].strftime("%m/%d/%Y")
 
         resp.status = falcon.HTTP_200
         resp.media = events
