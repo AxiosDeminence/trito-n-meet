@@ -359,7 +359,7 @@ class ManageGroups():
             if action in ("create", "delete"):
                 pass
             if action == "invite":
-                users =  str.strip(req.media.get("users")
+                users = str.strip(req.media.get("users"))
                 users = str.split(users)
             if action in ("join", "remove"):
                 member_email = str.strip(req.media.get("email"))
