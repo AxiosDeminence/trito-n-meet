@@ -336,6 +336,16 @@ class ManageGroups():
             resp.media = {"message": "Connection terminated"}
             return
 
+        keys = ["groupName", "owner", "members", "invited"]
+            
+        if joined_groups is not None:
+            joined_groups = [dict((key, value) for key, value in zip(keys, x))
+                                               for x in joined_groups]
+        if invitations is not None:
+            invitations = [dict((key, value) for key, value in zip(keys, x))
+                                             for x in invitations]
+        
+
         resp.status = falcon.HTTP_201
         resp.media = {"groups": joined_groups if joined_groups is not None else [],
                       "invites": invitations if invitations is not None else []}
