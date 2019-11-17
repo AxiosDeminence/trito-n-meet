@@ -317,8 +317,8 @@ class ManageGroups():
                 try:
                     cur.execute("""
                                 select * from groups
-                                    where %s = any(members);""",
-                                [user])
+                                    where %s=any(members) or %s=owner_email;""",
+                                [user,user])
                     joined_groups = cur.fetchall()
                 except psycopg2.ProgrammingError:
                     pass
