@@ -64,18 +64,18 @@ class GetFullName():
 
             with con:
                 cur = con.cursor()
-                cur.execute("""
+                cur.execute(\"\"\"
                             select members from groups
-                                where group_name=%s and owner_email=%s;""",
+                                where group_name=%s and owner_email=%s;\"\"\",
                             [group_name, creator])
                 users = list(cur.fetchall()[0])
                 
                 events = []
                 for user in users:
-                    cur.execute("""
+                    cur.execute(\"\"\"
                                 select start_time, end_time, start_date,
                                        end_date, days_of_week from events
-                                    where owner_email=%s;""",
+                                    where owner_email=%s;\"\"\",
                                 [user])
                     events.extend(cur.fetchall())
                 
