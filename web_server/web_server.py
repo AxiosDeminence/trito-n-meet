@@ -39,7 +39,7 @@ class GetFullName():
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
             return
-        except psycopg2.ProgrammingError
+        except psycopg2.ProgrammingError:
             resp.status = falcon.HTTP_400
             resp.media = {"message": "User does not exist"}
             return
