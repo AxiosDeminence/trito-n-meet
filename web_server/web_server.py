@@ -298,7 +298,7 @@ class ManageEvents():
         resp.status = falcon.HTTP_200
         resp.media = {"message": "Event managed successfully"}
 
-def ManageGroups():
+class ManageGroups():
     def on_get(self, req, resp):
         try:
             user = str.strip(req.media.get("email"))
@@ -515,5 +515,5 @@ GETFULLNAME_ENDPOINT = GetFullName()
 API.add_route("/createUser", CREATEUSER_ENDPOINT)
 API.add_route("/loginUser", USERLOGIN_ENDPOINT)
 API.add_route("/manageEvents", MANAGEEVENTS_ENDPOINT)
-API.add_route("/manageGroup", MANAGEGROUPS_ENDPOINT)
+API.add_route("/manageGroups", MANAGEGROUPS_ENDPOINT)
 API.add_route("/getFullName", GETFULLNAME_ENDPOINT)
