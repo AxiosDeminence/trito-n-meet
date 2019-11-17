@@ -4,6 +4,10 @@ import falcon
 import psycopg2
 from argon2 import PasswordHasher
 
+from datetime import date
+from dateutil.rrule import rrule, DAILY
+import calendar
+
 DATABASE = "d814roat3puk53"
 USER = "evsifgooyevaft"
 PASSWORD = "80f763bb1196c19be42f375323dedbfd6080cdec0605f12a689c5b51880505d2"
@@ -12,6 +16,88 @@ PORT = "5432"
 
 CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
                % (DATABASE, USER, PASSWORD, HOST, PORT))
+
+class GetFullName():
+    def on_get(self, req, resp):
+        try:
+            email = str.strip(req.media.get("email"))
+        except (KeyError, TypeError):
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Format Error"}
+            return
+
+        try:
+            con = psycopg2.connect(CREDENTIALS)
+            with con:
+                cur = con.cursor()
+                cur.execute("""
+                            select full_name from user_info
+                                where email=%s;""",
+                            [email])
+                name = cur.fetchone()[0]
+        except psycopg2.OperationalError:
+            resp.status = falcon.HTTP_503
+            resp.media = {"message": "Connection terminated"}
+            return
+        except psycopg2.ProgrammingError
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "User does not exist"}
+            return
+
+        resp.status = falcon.HTTP_200
+        resp.media = {"name": name}
+
+"""class SuggestGroupEvent():
+    def on_get(self, req, resp):
+        try:
+            length_of_event = str.strip(req.media.get("lengthOfEvent"))
+
+            group_name = str.strip(req.media.get("groupName"))
+            creator = str.strip(req.media.get("owner"))
+        except (KeyError, TypeError):
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Format Error"}
+            return
+
+        try:
+            con = psycopg2.connect(CREDENTIALS)
+
+            with con:
+                cur = con.cursor()
+                cur.execute("""
+                            select members from groups
+                                where group_name=%s and owner_email=%s;""",
+                            [group_name, creator])
+                users = list(cur.fetchall()[0])
+                
+                events = []
+                for user in users:
+                    cur.execute("""
+                                select start_time, end_time, start_date,
+                                       end_date, days_of_week from events
+                                    where owner_email=%s;""",
+                                [user])
+                    events.extend(cur.fetchall())
+                
+                keys = ["startTime", "endTime", "startDate", "endDate",
+                        "daysOfWeek"]
+            
+                events = [dict((key, value) for key, value in zip(keys, x))
+                                    for x in events]
+
+                for day in rrule(DAILY, dtstart=date.today(),
+                                 until=date.today()+14):
+                    today_events = []
+                    for event in events:
+                        if event["startDate"] == event["endDate"] and
+                           is not daysOfWeek:
+                            today_events.append(event)
+                        elif (day < event["endDate"] and
+                              day > event["startDate"] and
+                              calendar.day_name[day.weekday()] in
+                                  event["daysOfWeek"]):
+                            today_events.append(event)
+                    today_events = list(."""
 
 class CreateUser():
     def on_post(self, req, resp):
@@ -242,6 +328,7 @@ def ManageGroups():
                                 select * from groups
                                     where %s = any(invites);""",
                                 [user])
+                    invitations = cur.fetchall()
                 except psycopg2.ProgrammingError:
                     pass
         except psycopg2.OperationalError:
@@ -415,13 +502,18 @@ def ManageGroups():
             resp.status = falcon.HTTP_400
             resp.media = {"message": "Event does not exist"}
             return
+        except psycopg2.errors.UniqueViolation:
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "Event already exists"}
 
 API = falcon.API()
 CREATEUSER_ENDPOINT = CreateUser()
 USERLOGIN_ENDPOINT = UserLogin()
 MANAGEEVENTS_ENDPOINT = ManageEvents()
 MANAGEGROUPS_ENDPOINT = ManageGroups()
+GETFULLNAME_ENDPOINT = GetFullName()
 API.add_route("/createUser", CREATEUSER_ENDPOINT)
 API.add_route("/loginUser", USERLOGIN_ENDPOINT)
 API.add_route("/manageEvents", MANAGEEVENTS_ENDPOINT)
 API.add_route("/manageGroups", MANAGEGROUPS_ENDPOINT)
+API.add_route("/getFullName", GETFULLNAME_ENDPOINT)
