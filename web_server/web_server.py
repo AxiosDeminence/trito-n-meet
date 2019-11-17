@@ -351,6 +351,7 @@ class ManageGroups():
                       "invites": invitations if invitations is not None else []}
 
     def on_post(self, req, resp):
+        print(req)
         try:
             action = str.strip(req.media.get("action"))
 
