@@ -360,8 +360,8 @@ class ManageGroups():
             if action in ("create", "delete"):
                 pass
             if action == "invite":
-                users = str.strip(req.media.get("users"))
-                users = str.split(users, ",")
+                users = [str.strip(x)
+                         for x in req.media.get("users").split(",")]
             if action in ("join", "remove"):
                 member_email = str.strip(req.media.get("email"))
         except (KeyError, AssertionError, TypeError):
