@@ -418,7 +418,7 @@ class ManageGroups():
                                         where group_name=%s and owner_email=%s
                                         and (%s=any(invitations) or
                                              %s=any(members)));""",
-                                    [group_name, creator_email, x])
+                                    [group_name, creator_email, x, x])
                         if cur.fetchone()[0]:
                             invalid_users.append(x)
                     users = [x for x in users if x not in invalid_users]
