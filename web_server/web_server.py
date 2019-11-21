@@ -187,7 +187,7 @@ class UserLogin():
 
         try:
             hasher.verify(user_info[0], password)
-        except VerifyMisMatchError:
+        except argon2.exceptions.VerifyMisMatchError:
             resp.status = falcon.HTTP_401
             resp.media = {"message": "Incorrect password"}
             return
