@@ -35,6 +35,7 @@ class GetFullName():
                                 where email=%s;""",
                             [email])
                 name = cur.fetchone()[0]
+                print(name)
         except psycopg2.OperationalError:
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
@@ -47,57 +48,57 @@ class GetFullName():
         resp.status = falcon.HTTP_200
         resp.media = {"name": name}
 
-"""class SuggestGroupEvent():
-    def on_get(self, req, resp):
-        try:
-            length_of_event = str.strip(req.media.get("lengthOfEvent"))
-
-            group_name = str.strip(req.media.get("groupName"))
-            creator = str.strip(req.media.get("owner"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Format Error"}
-            return
-
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-
-            with con:
-                cur = con.cursor()
-                cur.execute(\"\"\"
-                            select members from groups
-                                where group_name=%s and owner_email=%s;\"\"\",
-                            [group_name, creator])
-                users = list(cur.fetchall()[0])
-                
-                events = []
-                for user in users:
-                    cur.execute(\"\"\"
-                                select start_time, end_time, start_date,
-                                       end_date, days_of_week from events
-                                    where owner_email=%s;\"\"\",
-                                [user])
-                    events.extend(cur.fetchall())
-                
-                keys = ["startTime", "endTime", "startDate", "endDate",
-                        "daysOfWeek"]
-            
-                events = [dict((key, value) for key, value in zip(keys, x))
-                                    for x in events]
-
-                for day in rrule(DAILY, dtstart=date.today(),
-                                 until=date.today()+14):
-                    today_events = []
-                    for event in events:
-                        if event["startDate"] == event["endDate"] and
-                           is not daysOfWeek:
-                            today_events.append(event)
-                        elif (day < event["endDate"] and
-                              day > event["startDate"] and
-                              calendar.day_name[day.weekday()] in
-                                  event["daysOfWeek"]):
-                            today_events.append(event)
-                    today_events = list(."""
+#"""class SuggestGroupEvent():
+#    def on_get(self, req, resp):
+#        try:
+#            length_of_event = str.strip(req.media.get("lengthOfEvent"))
+#
+#            group_name = str.strip(req.media.get("groupName"))
+#            creator = str.strip(req.media.get("owner"))
+#        except (KeyError, TypeError):
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "JSON Format Error"}
+#            return
+#
+#        try:
+#            con = psycopg2.connect(CREDENTIALS)
+#
+#            with con:
+#                cur = con.cursor()
+#                cur.execute("""
+#                            select members from groups
+#                                where group_name=%s and owner_email=%s;""",
+#                            [group_name, creator])
+#                users = list(cur.fetchall()[0])
+#                
+#                events = []
+#                for user in users:
+#                    cur.execute("""
+#                                select start_time, end_time, start_date,
+#                                       end_date, days_of_week from events
+#                                    where owner_email=%s;""",
+#                                [user])
+#                    events.extend(cur.fetchall())
+#                
+#                keys = ["startTime", "endTime", "startDate", "endDate",
+#                        "daysOfWeek"]
+#            
+#                events = [dict((key, value) for key, value in zip(keys, x))
+#                                    for x in events]
+#
+#                for day in rrule(DAILY, dtstart=date.today(),
+#                                 until=date.today()+14):
+#                    today_events = []:
+#                    for event in events:
+#                        if event["startDate"] == event["endDate"] and
+#                            and not event["daysOfWeek"]:
+#                            today_events.append(event)
+#                        elif (day < event["endDate"] and
+#                              day > event["startDate"] and
+#                              calendar.day_name[day.weekday()] in
+#                                  event["daysOfWeek"]):
+#                            today_events.append(event)
+#                    today_events = 
 
 class CreateUser():
     def on_post(self, req, resp):
@@ -362,6 +363,7 @@ class ManageGroups():
             if action == "invite":
                 users = [str.strip(x)
                          for x in req.media.get("users").split(",")]
+                print(users)
             if action in ("join", "remove"):
                 member_email = str.strip(req.media.get("email"))
         except (KeyError, AssertionError, TypeError):
