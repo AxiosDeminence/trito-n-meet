@@ -508,8 +508,9 @@ class ManageGroups():
                     cur.execute("""
                                 select exists(select * from groups
                                     where group_name=%s and owner_email=%s
-                                    and %s=any(invites));""",
-                                [group_name, creator_email, member_email])
+                                    and (%s=any(invites) or %s=any(members)));""",
+                                [group_name, creator_email, member_email,
+                                 member_email])
                     if not cur.fetchone()[0]:
                         resp.status = falcon.HTTP_400
                         resp.media = {"message": "User not in group"}
@@ -517,9 +518,11 @@ class ManageGroups():
 
                     cur.execute("""
                                 update groups
-                                    set members=array_remove(invites,%s)
+                                    set invites=array_remove(invites,%s),
+                                        members=array_remove(members,%s)
                                     where group_name=%s and owner_email=%s;""",
-                                [member_email, group_name, creator_email])
+                                [member_email, member_email, group_name,
+                                 creator_email])
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "User declined invite successfully"}
