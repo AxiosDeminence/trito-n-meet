@@ -8,6 +8,8 @@ from datetime import date
 from dateutil.rrule import rrule, DAILY
 import calendar
 
+import traceback
+
 DATABASE = "d814roat3puk53"
 USER = "evsifgooyevaft"
 PASSWORD = "80f763bb1196c19be42f375323dedbfd6080cdec0605f12a689c5b51880505d2"
@@ -512,6 +514,7 @@ class ManageGroups():
             resp.media = {"message": "Connection terminated"}
             return
         except psycopg2.ProgrammingError:
+            print(traceback.format_exc())
             resp.status = falcon.HTTP_400
             resp.media = {"message": "Group does not exist"}
             return
