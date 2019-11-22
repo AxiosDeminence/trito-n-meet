@@ -86,6 +86,7 @@ class GetFullName():
 #                events = [dict((key, value) for key, value in zip(keys, x))
 #                                    for x in events]
 #
+#                legal_events = []
 #                for day in rrule(DAILY, dtstart=date.today(),
 #                                 until=date.today()+14):
 #                    today_events = []:
@@ -418,7 +419,7 @@ class ManageGroups():
                         cur.execute("""
                                     select exists(select * from groups
                                         where group_name=%s and owner_email=%s
-                                        and (%s=any(invitations) or
+                                        and (%s=any(invites) or
                                              %s=any(members)));""",
                                     [group_name, creator_email, x, x])
                         if cur.fetchone()[0]:
@@ -512,11 +513,11 @@ class ManageGroups():
             return
         except psycopg2.ProgrammingError:
             resp.status = falcon.HTTP_400
-            resp.media = {"message": "Event does not exist"}
+            resp.media = {"message": "Group does not exist"}
             return
         except psycopg2.errors.UniqueViolation:
             resp.status = falcon.HTTP_400
-            resp.media = {"message": "Event already exists"}
+            resp.media = {"message": "Group already exists"}
 
 API = falcon.API()
 CREATEUSER_ENDPOINT = CreateUser()
