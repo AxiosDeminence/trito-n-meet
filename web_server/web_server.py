@@ -476,7 +476,7 @@ class ManageGroups():
                     cur.execute("""
                                 select exists(select * from groups
                                     where group_name=%s and owner_email=%s
-                                    and %s=any(invitations));""",
+                                    and %s=any(invites));""",
                                 [group_name, creator_email, member_email])
                     if not cur.fetchone()[0]:
                         resp.status = falcon.HTTP_403
