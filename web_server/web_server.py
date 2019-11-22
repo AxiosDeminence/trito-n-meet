@@ -88,7 +88,19 @@ class GetFullName():
 #                events = [dict((key, value) for key, value in zip(keys, x))
 #                                    for x in events]
 #
-#                legal_events = []
+#                mapped_events = []
+#                mapped_keys = ["timeSlot", "dateRange", "daysOfWeek"]
+#                event_builder = {key: None for key in mapped_keys}
+#                for x in events:
+#                    event_builder["timeSlot"] = (x["startTime"], x["endTime"])
+#                    event_builder["dateRange"] = (x["startDate"],
+#                                  x["endDate"])
+#                    event_builder["daysOfWeek"] = x["daysOfWeek"]
+#                    mapped_events.append(event_builder)
+#
+#                condensed_events = []
+#                
+#
 #                for day in rrule(DAILY, dtstart=date.today(),
 #                                 until=date.today()+14):
 #                    today_events = []:
@@ -430,7 +442,7 @@ class ManageGroups():
 
                     cur.execute("""
                                 update groups
-                                    set invites=array_cat(invites,%s)
+                                    set invites=array_cat(invites,%s::citext[])
                                     where group_name=%s and owner_email=%s;""",
                                 [users, group_name, creator_email])
 
