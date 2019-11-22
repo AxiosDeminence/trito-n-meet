@@ -490,7 +490,7 @@ class ManageGroups():
                                 [member_email, group_name, creator_email])
                     cur.execute("""
                                 update groups
-                                    set members=array_cat(members,%s)
+                                    set members=array_append(members,%s)
                                     where group_name=%s and owner_email=%s;""",
                                 [member_email, group_name, creator_email])
 
