@@ -498,6 +498,8 @@ class ManageGroups():
                     resp.media = {"message": "Joined group successfully"}
 
                 if action == "remove":
+                    print("member_email: {} == creator_email: {}".format(
+                          member_email, creator_email))
                     if member_email == creator_email:
                         resp.status = falcon.HTTP_400
                         resp.media = {"message": "Cannot remove owner"}
