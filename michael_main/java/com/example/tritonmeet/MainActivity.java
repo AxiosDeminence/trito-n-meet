@@ -2,54 +2,94 @@ package com.example.tritonmeet;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    FloatingActionButton addEventButton;
-    Button tempButton;
+    private DrawerLayout drawer;
+    private TextView email;
+    private Intent retrieveCurrentUser;
+    private String currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tempButton = findViewById(R.id.tempButton1);
-        addEventButton = findViewById(R.id.fabAddEvent);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        tempButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                goToGroupActivity(view);
-            }
-        });
+        drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
-        addEventButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addEvent(view);
-            }
-        });
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new com.example.tritonmeet.HomeFragment()).commit();
+            navigationView.setCheckedItem(R.id.nav_home);
+        }
+
+        retrieveCurrentUser = getIntent();
+        currentUser = retrieveCurrentUser.getStringExtra("email");
+
+        View headerView = navigationView.getHeaderView(0);
+        email = headerView.findViewById(R.id.profileEmail);
+
+        if (email != null) {
+            email.setText(currentUser);
+        }
     }
 
-    public void goToGroupActivity(View view) {
+    @Override
+    public boolean onNavigationItemSelected(MenuItem menuItem) {
+        switch(menuItem.getItemId()) {
+            case R.id.nav_home:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new com.example.tritonmeet.HomeFragment()).commit();
+                break;
+            case R.id.nav_groups:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new com.example.tritonmeet.GroupsFragment()).commit();
+                break;
+            case R.id.nav_invitations:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new com.example.tritonmeet.InvitesFragment()).commit();
+                break;
+            case R.id.nav_settings:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new com.example.tritonmeet.SettingsFragment()).commit();
+                break;
+            case R.id.nav_help:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new com.example.tritonmeet.HelpFragment()).commit();
+                break;
+        }
 
-        Intent retrieveOwner = getIntent();
-        String owner = retrieveOwner.getStringExtra("email");
-
-        Intent i = new Intent(MainActivity.this, Group1Activity.class);
-        i.putExtra("email", owner);
-
-        startActivity(i);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
-    public void addEvent(View view) {
-        Intent i = new Intent(MainActivity.this, AddEventActivity.class);
-        startActivity(i);
+    @Override
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

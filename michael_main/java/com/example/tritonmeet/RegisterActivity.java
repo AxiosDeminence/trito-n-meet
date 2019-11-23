@@ -124,7 +124,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         else {
-            checkThree.setText("At least 6 characters with at least 1: uppercase, lowercase, number, symbol");
+            checkThree.setText(getResources().getString(R.string.passCheck));
             checkThree.setTextColor(Color.LTGRAY);
             validPassword = true;
         }

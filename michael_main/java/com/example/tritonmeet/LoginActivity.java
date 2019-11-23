@@ -24,7 +24,6 @@ public class LoginActivity extends AppCompatActivity {
 
     String myURL;
     TextView registerAcc;
-    TextView forgotPass;
     EditText emailAddress;
     EditText passWord;
     Button loginButton;
@@ -33,9 +32,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        setTitle("Login");
 
         myURL = "https://triton-meet.herokuapp.com/loginUser";
-        forgotPass = findViewById(R.id.forgotPass);
         registerAcc = findViewById(R.id.registerText);
         emailAddress = findViewById(R.id.loginEmail);
         passWord = findViewById(R.id.loginPass);
@@ -54,13 +53,6 @@ public class LoginActivity extends AppCompatActivity {
         registerAcc.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent i = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(i);
-            }
-        });
-
-        forgotPass.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                Intent i = new Intent(LoginActivity.this, Forgot1Activity.class);
                 startActivity(i);
             }
         });
@@ -107,18 +99,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
 
                 Context context = getApplicationContext();
-                CharSequence text;
+                CharSequence text = "Invalid account or password";
                 int duration = Toast.LENGTH_SHORT;
-
-                if (statusCode == 400) {
-                    text = "User does not exist";
-                }
-                else if (statusCode == 401) {
-                    text = "User and password do not match";
-                }
-                else {
-                    text = "Error " + statusCode + ": " + error;
-                }
 
                 Toast toast = Toast.makeText(context, text, duration);
                 toast.show();

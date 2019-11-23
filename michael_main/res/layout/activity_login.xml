@@ -28,28 +28,16 @@
         android:id="@+id/registerText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/text_name_register"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loginButton"
-        tools:text="Register"
+        android:layout_marginTop="20dp"
         android:clickable="true"
-        android:focusable="true" />
-
-    <TextView
-        android:id="@+id/forgotPass"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/text_name_forgot"
+        android:focusable="true"
+        android:text="@string/text_name_register"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerText"
-        tools:text="Forgot password?"
-        android:clickable="true"
-        android:focusable="true"/>
+        app:layout_constraintTop_toBottomOf="@+id/loginButton"
+        tools:text="Register" />
 
     <EditText
         android:id="@+id/loginEmail"
