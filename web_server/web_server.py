@@ -3,6 +3,7 @@ import datetime
 
 import falcon
 import psycopg2
+import argon2
 from argon2 import PasswordHasher
 
 DATABASE = "d814roat3puk53"
