@@ -45,7 +45,7 @@ class GetFullName():
         resp.status = falcon.HTTP_200
         resp.media = {"name": name}
 
-class ManageGroupEvent():
+class ManageGroupEvents():
     def on_get(self, req, resp):
         try:
             length_of_event = datetime.datetime.strptime(str.strip(req.media.get("lengthOfEvent")), "%H:%M")
