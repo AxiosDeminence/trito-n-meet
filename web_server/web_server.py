@@ -67,7 +67,7 @@ class ManageGroupEvent():
                             select members from groups
                                 where group_name=%s and owner_email=%s;""",
                             [group_name, creator])
-                users = list(cur.fetchall()[0])
+                users = cur.fetchone()[1].append(cur.fetchone()[0])
                 
                 events = []
                 for user in users:
@@ -618,8 +618,10 @@ USERLOGIN_ENDPOINT = UserLogin()
 MANAGEEVENTS_ENDPOINT = ManageEvents()
 MANAGEGROUPS_ENDPOINT = ManageGroups()
 GETFULLNAME_ENDPOINT = GetFullName()
+MANAGEGROUPEVENTS_ENDPOINT = ManageGroupEvents()
 API.add_route("/createUser", CREATEUSER_ENDPOINT)
 API.add_route("/loginUser", USERLOGIN_ENDPOINT)
 API.add_route("/manageEvents", MANAGEEVENTS_ENDPOINT)
 API.add_route("/manageGroups", MANAGEGROUPS_ENDPOINT)
 API.add_route("/getFullName", GETFULLNAME_ENDPOINT)
+API.add_route("/manageGroupEvents", MANAGEGROUPEVENTS_ENDPOINT)
