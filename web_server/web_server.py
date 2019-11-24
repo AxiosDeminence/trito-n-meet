@@ -315,10 +315,11 @@ class ManageEvents():
                                     for x in events]
 
         for x in events:
-            x["startTime"] = x["startTime"].strftime("%I:%M")
-            x["endTime"] = x["endTime"].strftime("%I:%M")
+            x["startTime"] = x["startTime"].strftime("%H:%M")
+            x["endTime"] = x["endTime"].strftime("%H:%M")
             x["startDate"] = x["startDate"].strftime("%m/%d/%Y")
             x["endDate"] = x["endDate"].strftime("%m/%d/%Y")
+            x["daysOfweek"] = x["daysOfWeek"].replace("{", "").replace("}", "").split(",")
 
         resp.status = falcon.HTTP_200
         resp.media = events
