@@ -1,14 +1,9 @@
 import re
+import datetime
 
 import falcon
 import psycopg2
 from argon2 import PasswordHasher
-
-from datetime import date
-from dateutil.rrule import rrule, DAILY
-import calendar
-
-import traceback
 
 DATABASE = "d814roat3puk53"
 USER = "evsifgooyevaft"
@@ -50,70 +45,145 @@ class GetFullName():
         resp.status = falcon.HTTP_200
         resp.media = {"name": name}
 
-#"""class SuggestGroupEvent():
-#    def on_get(self, req, resp):
-#        try:
-#            length_of_event = str.strip(req.media.get("lengthOfEvent"))
-#
-#            group_name = str.strip(req.media.get("groupName"))
-#            creator = str.strip(req.media.get("owner"))
-#        except (KeyError, TypeError):
-#            resp.status = falcon.HTTP_400
-#            resp.media = {"message": "JSON Format Error"}
-#            return
-#
-#        try:
-#            con = psycopg2.connect(CREDENTIALS)
-#
-#            with con:
-#                cur = con.cursor()
-#                cur.execute("""
-#                            select members from groups
-#                                where group_name=%s and owner_email=%s;""",
-#                            [group_name, creator])
-#                users = list(cur.fetchall()[0])
-#                
-#                events = []
-#                for user in users:
-#                    cur.execute("""
-#                                select start_time, end_time, start_date,
-#                                       end_date, days_of_week from events
-#                                    where owner_email=%s;""",
-#                                [user])
-#                    events.extend(cur.fetchall())
-#                
-#                keys = ["startTime", "endTime", "startDate", "endDate",
-#                        "daysOfWeek"]
-#            
-#                events = [dict((key, value) for key, value in zip(keys, x))
-#                                    for x in events]
-#
-#                mapped_events = []
-#                mapped_keys = ["timeSlot", "dateRange", "daysOfWeek"]
-#                event_builder = {key: None for key in mapped_keys}
-#                for x in events:
-#                    event_builder["timeSlot"] = (x["startTime"], x["endTime"])
-#                    event_builder["dateRange"] = (x["startDate"],
-#                                  x["endDate"])
-#                    event_builder["daysOfWeek"] = x["daysOfWeek"]
-#                    mapped_events.append(event_builder)
-#
-#                condensed_events = []
-#                
-#
-#                for day in rrule(DAILY, dtstart=date.today(),
-#                                 until=date.today()+14):
-#                    today_events = []:
-#                    for event in events:
-#                        if event["startDate"] == event["endDate"] and
-#                            and not event["daysOfWeek"]:
-#                            today_events.append(event)
-#                        elif (day < event["endDate"] and
-#                              day > event["startDate"] and
-#                              calendar.day_name[day.weekday()] in
-#                                  event["daysOfWeek"]):
-#                            today_events.append(event)
-#                    today_events = 
+class ManageGroupEvent():
+    def on_get(self, req, resp):
+        try:
+            length_of_event = datetime.datetime.strptime(str.strip(req.media.get("lengthOfEvent")), "%H:%M")
+            length_of_event = datetime.timedelta(hours=length_of_event.hour, minutes=length_of_event.minute)
+
+            group_name = str.strip(req.media.get("groupName"))
+            creator = str.strip(req.media.get("owner"))
+        except (KeyError, TypeError):
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Format Error"}
+            return
+
+        try:
+            con = psycopg2.connect(CREDENTIALS)
+
+            with con:
+                cur = con.cursor()
+                cur.execute("""
+                            select members from groups
+                                where group_name=%s and owner_email=%s;""",
+                            [group_name, creator])
+                users = list(cur.fetchall()[0])
+                
+                events = []
+                for user in users:
+                    cur.execute("""
+                                select start_time, end_time, start_date,
+                                       end_date, days_of_week from events
+                                    where owner_email=%s;""",
+                                [user])
+                    events.extend(cur.fetchall())
+        except psycopg2.OperationalError:
+            resp.status = falcon.HTTP_503
+            resp.media = {"message": "Connection terminated"}
+
+        keys = ["startTime", "endTime", "startDate", "endDate",
+                "daysOfWeek"]
+            
+        events = [dict((key, value) for key, value in zip(keys, x))
+                                    for x in events]
+
+        mapped_events = []
+        mapped_keys = ["timeSlot", "dateRange", "daysOfWeek"]
+        event_builder = {key: None for key in mapped_keys}
+        for x in events:
+            event_builder["timeSlot"] = (x["startTime"], x["endTime"])
+            event_builder["dateRange"] = (x["startDate"],
+                          x["endDate"])
+            event_builder["daysOfWeek"] = [time.strptime(y, "%A").tm_wday for y in x["daysOfWeek"]]
+            mapped_events.append(event_builder)
+
+        starting_times = []
+        for day in [datetime.date.today() + datetime.timedelta(days=x) for x in range(14)]:
+            today_events = []
+            for event in mapped_events:
+                if event["endDate"] == event["startDate"] == day:
+                    today_events.append(event)
+                elif (event["endDate"] >= datetime.date.today() and event["startDate"] <= datetime.data.today()
+                      and day.weekday() in event["daysOfweek"]):
+                    today_events.append(event)
+            today_events = [x for x in today_events if x >= datetime.datetime.now()]
+            today_events = [x["timeSlot"] for x in today_events]
+                   
+            condensed_times = []
+            event = today_events[0]
+            for x in today_events[1:]:
+                if event[1] >= x[0]:
+                    event = (min(event[0], x[0]), max(event[1], x[1]))
+                else:
+                    condensed_times.append(event)
+                    event = x
+            else:
+                condensed_times.append(event)
+
+            condensed_times = sorted(condensed_times, key = lambda x: x[0])
+            condensed_times = [(x[0] - (x[0] - datetime.datetime.min) % datetime.timedelta(minutes=15),
+                                x[1] + (datetime.datetime.min - x[1]) % datetime.timedelta(minutes=15))
+                                for x in condensed_times]
+            start = datetime.datetime.now() 
+            start = start + (datetime.datetime.min - start) % datetime.timedelta(hours=1)
+                    
+            legal_times = []
+            next_time_slot_index = 0
+            next_time_slot = condensed_times[next_time_slot_index]
+            while start.date() == day.date() and next_time_slot_index < len(condensed_times):
+                i = 0
+                while start + datetime.timedelta(minutes=15 * i) + length_of_event <= next_time_slot[0] and (start + datetime.timdelta(minutes=15 * i)).date() == day.date():
+                    legal_times.append(start + datetime.timedelta(minutes=15 * i))
+                    i += 1
+                start = next_time_slot[1]
+                next_time_slot_index += 1
+                next_time_slot = condensed_times[next_time_slot_index]
+            starting_times.extend([datetime.datetime.combine(day, x) for x in legal_times])
+            
+            resp.status = falcon.HTTP_200
+            resp.media = {"validStartingTimes": starting_times}
+            
+    def on_post(self, req, resp):
+        try:
+            group_name = str.strip(req.media.get("groupName"))
+            creator_email = str.strip(req.media.get("owner"))
+            event_name = str.strip(req.media.get("eventName"))
+            start_time = str.strip(req.media.get("startTime"))
+            end_time = str.strip(req.media.get("endTime"))
+            date = str.strip(req.media.get("date"))
+        except (KeyError, TypeError):
+            resp.status = falcon.HTTP_400
+            resp.media = {"message": "JSON Format Error"}
+            return
+        
+        try:
+            con = psycopg2.connect(CREDENTIALS)
+            
+            with con:
+                cur = con.cursor()
+                cur.execute("""
+                            select owner_email, members from groups
+                                where %s=group_name and %s=owner_email;""",
+                            [group_name, creator_email])
+                all_members = cur.fetchone()[1].append(cur.fetchone()[0])
+                
+                for x in all_members:
+                    cur.execute("""
+                                insert into events(owner_email, event_name,
+                                                   start_time, end_time,
+                                                   start_date, end_date,
+                                                   days_of_week)
+                                values(%s,%s,%s,%s,%s,%s,%s);""",
+                                [x, event_name, start_time, end_time,
+                                 date, date, []])
+                con.commit()
+        except psycopg2.OperationalError:
+            resp.status = falcon.HTTP_503
+            resp.media = {"message": "Connection terminated"}
+            return
+         
+        resp.status = falcon.HTTP_200
+        resp.media = {"message": "Added group event to all members"}
 
 class CreateUser():
     def on_post(self, req, resp):
@@ -406,6 +476,7 @@ class ManageGroups():
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Group created"}
+                    con.commit()
                     return
 
                 if action == "delete":
@@ -416,6 +487,7 @@ class ManageGroups():
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Group deleted"}
+                    con.commit()
                     return
 
                 if action == "invite":
@@ -452,6 +524,7 @@ class ManageGroups():
                     if len(invalid_users) != 0:
                         response["invalid_invitations"] = invalid_users
                     resp.media = response
+                    con.commit()
                     return
 
                 if action == "join":
@@ -496,6 +569,7 @@ class ManageGroups():
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Joined group successfully"}
+                    con.commit()
 
                 if action == "remove":
                     print("member_email: {} == creator_email: {}".format(
@@ -523,7 +597,7 @@ class ManageGroups():
                                     where group_name=%s and owner_email=%s;""",
                                 [member_email, member_email, group_name,
                                  creator_email])
-
+                    con.commit()
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "User declined invite successfully"}
         except psycopg2.OperationalError:
@@ -531,7 +605,6 @@ class ManageGroups():
             resp.media = {"message": "Connection terminated"}
             return
         except psycopg2.ProgrammingError:
-            print(traceback.format_exc())
             resp.status = falcon.HTTP_400
             resp.media = {"message": "Group does not exist"}
             return
