@@ -167,7 +167,8 @@ class ManageGroupEvents():
                                 where %s=group_name and %s=owner_email;""",
                             [group_name, creator_email])
                 result = cur.fetchone()
-                all_members = result[1].replace("{", "").replace("}", "").split(",").append(result[0])
+                all_members = result[1].replace("{", "").replace("}", "").split(",")
+                all_members.append(result[0])
                 
                 for x in all_members:
                     cur.execute("""
