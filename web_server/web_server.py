@@ -167,7 +167,7 @@ class ManageGroupEvents():
                                 where %s=group_name and %s=owner_email;""",
                             [group_name, creator_email])
                 result = cur.fetchone()
-                all_members = result[0].append(result[1])
+                all_members = result[1].replace("{", "").replace("}", "").split(",").append(result[0])
                 
                 for x in all_members:
                     cur.execute("""
@@ -339,7 +339,7 @@ class ManageEvents():
                 end_time = datetime.datetime.strptime(str.strip(req.media.get("endTime")), "%H:%M").time()
                 start_date = datetime.datetime.strptime(str.strip(req.media.get("startDate")), "%m/%d/%Y").date()
                 end_date = datetime.datetime.strptime(str.strip(req.media.get("endDate")), "%m/%d/%Y").date()
-                days_of_week = list(map(str.strip, req.media.get("daysOfWeek")))
+                days_of_week = list(map(str.strip, req.media.get("daysOfWeek").split(",")))
             if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
         except (TypeError, KeyError):
