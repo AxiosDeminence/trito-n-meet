@@ -343,7 +343,6 @@ class ManageEvents():
             if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
         except (TypeError, KeyError):
-            print(traceback
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
             return
