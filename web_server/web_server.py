@@ -395,6 +395,7 @@ class ManageGroups():
         except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Form Error"}
+            return
 
         try:
             con = psycopg2.connect(CREDENTIALS)
