@@ -166,7 +166,8 @@ class ManageGroupEvents():
                             select owner_email, members from groups
                                 where %s=group_name and %s=owner_email;""",
                             [group_name, creator_email])
-                all_members = cur.fetchone()[1].append(cur.fetchone()[0])
+                result = cur.fetchone()
+                all_members = result[1].append(result[0])
                 
                 for x in all_members:
                     cur.execute("""
