@@ -276,7 +276,7 @@ class UserLogin():
 
         try:
             hasher.verify(user_info[0], password)
-        except argon2.exceptions.VerifyMisMatchError:
+        except argon2.exceptions.VerifyMismatchError:
             resp.status = falcon.HTTP_401
             resp.media = {"message": "Incorrect password"}
             return
@@ -340,7 +340,7 @@ class ManageEvents():
                 end_time = datetime.datetime.strptime(str.strip(req.media.get("endTime")), "%H:%M").time()
                 start_date = datetime.datetime.strptime(str.strip(req.media.get("startDate")), "%m/%d/%Y").date()
                 end_date = datetime.datetime.strptime(str.strip(req.media.get("endDate")), "%m/%d/%Y").date()
-                days_of_week = list(map(str.strip, req.media.get("daysOfWeek").split(",")))
+                days_of_week = [x for x in req.media.get("daysOfWeek").split(",") if x != ""]
             if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
         except (TypeError, KeyError):
