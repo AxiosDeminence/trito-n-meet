@@ -149,9 +149,9 @@ class ManageGroupEvents():
             group_name = str.strip(req.media.get("groupName"))
             creator_email = str.strip(req.media.get("owner"))
             event_name = str.strip(req.media.get("eventName"))
-            start_time = str.strip(req.media.get("startTime"))
-            end_time = str.strip(req.media.get("endTime"))
-            date = str.strip(req.media.get("date"))
+            start_time = datetime.datetime.strptime(str.strip(req.media.get("startTime")), "%H:%M").time()
+            end_time = datetime.datetime.strptime(str.strip(req.media.get("endTime")), "%H:%M").time()
+            date = datetime.datetime.striptime(str.strip(req.media.get("date")), "%m/%d%%Y").date()
         except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Format Error"}
