@@ -334,10 +334,10 @@ class ManageEvents():
                 event_id = req.media.get("eventID")
             if action in ("edit", "create"):
                 event_name = str.strip(req.media.get("eventName"))
-                start_time = str.strip(req.media.get("startTime"))
-                end_time = str.strip(req.media.get("endTime"))
-                start_date = str.strip(req.media.get("startDate"))
-                end_date = str.strip(req.media.get("endDate"))
+                start_time = datetime.datetime.strptime(str.strip(req.media.get("startTime")), "%H:%M").time()
+                end_time = datetime.datetime.strptime(str.strip(req.media.get("endTime")), "%H:%M").time()
+                start_date = datetime.datetime.strptime(str.strip(req.media.get("startDate")), "%m/%d/%Y").date()
+                end_date = datetime.datetime.strptime(str.strip(req.media.get("endDate")), "%m/%d/%Y").date()
                 days_of_week = list(map(str.strip, req.media.get("daysOfWeek")))
             if action not in ("delete", "edit", "create"):
                 raise KeyError("Not a valid action")
