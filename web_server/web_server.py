@@ -292,7 +292,7 @@ class UserLogin():
 class ManageEvents():
     def on_get(self, req, resp): # Ask for all events of a user
         try:
-            print(req.body)
+            print(req)
             user = str.strip(req.media.get("email"))
         except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
