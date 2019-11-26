@@ -45,6 +45,7 @@ class GetFullName():
 
         resp.status = falcon.HTTP_200
         resp.media = {"name": name}
+        return
 
 class ManageGroupEvents():
     def on_get(self, req, resp):
@@ -143,6 +144,7 @@ class ManageGroupEvents():
             
             resp.status = falcon.HTTP_200
             resp.media = {"validStartingTimes": starting_times}
+            return
             
     def on_post(self, req, resp):
         try:
@@ -187,6 +189,7 @@ class ManageGroupEvents():
          
         resp.status = falcon.HTTP_200
         resp.media = {"message": "Added group event to all members"}
+        return
 
 class CreateUser():
     def on_post(self, req, resp):
@@ -243,6 +246,7 @@ class CreateUser():
 
         resp.status = falcon.HTTP_201
         resp.media = {"message": "User created"}
+        return
 
 class UserLogin():
     def on_post(self, req, resp):
@@ -283,10 +287,12 @@ class UserLogin():
 
         resp.status = falcon.HTTP_200
         resp.media = {"message": "User logged in"}
+        return
 
 class ManageEvents():
     def on_get(self, req, resp): # Ask for all events of a user
         try:
+            print(req.body)
             user = str.strip(req.media.get("email"))
         except (KeyError, TypeError):
             resp.status = falcon.HTTP_400
@@ -326,6 +332,7 @@ class ManageEvents():
 
         resp.status = falcon.HTTP_200
         resp.media = events
+        return
 
     def on_post(self, req, resp): # Will include edit and create
         try:
@@ -387,6 +394,7 @@ class ManageEvents():
 
         resp.status = falcon.HTTP_200
         resp.media = {"message": "Event managed successfully"}
+        return
 
 class ManageGroups():
     def on_get(self, req, resp):
@@ -436,10 +444,10 @@ class ManageGroups():
             invitations = [dict((key, value) for key, value in zip(keys, x))
                                              for x in invitations]
         
-
         resp.status = falcon.HTTP_201
         resp.media = {"groups": joined_groups if joined_groups is not None else [],
                       "invites": invitations if invitations is not None else []}
+        return
 
     def on_post(self, req, resp):
         print(req)
@@ -448,12 +456,9 @@ class ManageGroups():
 
             group_name = str.strip(req.media.get("groupName"))
             creator_email = str.strip(req.media.get("owner"))
-            if action in ("create", "delete"):
-                pass
             if action == "invite":
                 users = [str.strip(x)
                          for x in req.media.get("users").split(",")]
-                print(users)
             if action in ("join", "remove"):
                 member_email = str.strip(req.media.get("email"))
         except (KeyError, AssertionError, TypeError):
@@ -478,10 +483,11 @@ class ManageGroups():
                                                    members, invites)
                                     values(%s, %s, %s, %s);""",
                                 [group_name, creator_email, [], []])
+                    con.commit()
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Group created"}
-                    con.commit()
+
                     return
 
                 if action == "delete":
@@ -489,10 +495,10 @@ class ManageGroups():
                                 delete from groups
                                     where group_name = %s and owner_email = %s;
                                 """, [group_name, creator_email])
+                    con.commit()
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Group deleted"}
-                    con.commit()
                     return
 
                 if action == "invite":
@@ -522,6 +528,7 @@ class ManageGroups():
                                     set invites=array_cat(invites,%s::citext[])
                                     where group_name=%s and owner_email=%s;""",
                                 [users, group_name, creator_email])
+                    con.commit()
 
                     resp.status = falcon.HTTP_200
                     response = {"message": "Attempted inviting users",
@@ -529,7 +536,6 @@ class ManageGroups():
                     if len(invalid_users) != 0:
                         response["invalid_invitations"] = invalid_users
                     resp.media = response
-                    con.commit()
                     return
 
                 if action == "join":
@@ -566,19 +572,18 @@ class ManageGroups():
                                     set invites=array_remove(invites,%s)
                                     where group_name=%s and owner_email=%s;""",
                                 [member_email, group_name, creator_email])
+                    con.commit()
                     cur.execute("""
                                 update groups
                                     set members=array_append(members,%s)
                                     where group_name=%s and owner_email=%s;""",
                                 [member_email, group_name, creator_email])
+                    con.commit()
 
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "Joined group successfully"}
-                    con.commit()
 
                 if action == "remove":
-                    print("member_email: {} == creator_email: {}".format(
-                          member_email, creator_email))
                     if member_email == creator_email:
                         resp.status = falcon.HTTP_400
                         resp.media = {"message": "Cannot remove owner"}
@@ -603,8 +608,10 @@ class ManageGroups():
                                 [member_email, member_email, group_name,
                                  creator_email])
                     con.commit()
+                    
                     resp.status = falcon.HTTP_200
                     resp.media = {"message": "User declined invite successfully"}
+                    return
         except psycopg2.OperationalError:
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
@@ -616,6 +623,9 @@ class ManageGroups():
         except psycopg2.errors.UniqueViolation:
             resp.status = falcon.HTTP_400
             resp.media = {"message": "Group already exists"}
+            return
+        
+        
 
 API = falcon.API()
 CREATEUSER_ENDPOINT = CreateUser()
