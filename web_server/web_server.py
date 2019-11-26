@@ -328,7 +328,7 @@ class ManageEvents():
             x["endTime"] = x["endTime"].strftime("%H:%M")
             x["startDate"] = x["startDate"].strftime("%m/%d/%Y")
             x["endDate"] = x["endDate"].strftime("%m/%d/%Y")
-            x["daysOfWeek"] = x["daysOfWeek"].replace("{", "").replace("}", "").split(",")
+            x["daysOfWeek"] = list(filter(None, x["daysOfWeek"].replace("{", "").replace("}", "").split(",")))
 
         resp.status = falcon.HTTP_200
         resp.media = events
