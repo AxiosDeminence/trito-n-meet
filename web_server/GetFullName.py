@@ -3,6 +3,7 @@ from contextlib import closing
 import psycopg2
 import falcon
 
+
 class GetFullName:
     _CREDENTIALS = None
 

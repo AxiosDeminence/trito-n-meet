@@ -47,9 +47,9 @@ class UserLogin:
         return {"is_success": is_success, "result": result}
 
     @staticmethod
-    def verify_identify(password, user_hash):
+    def verify_identity(password, user_hash):
         try:
-            argon2.PasswordHasher().hasher.verify(password, user_hash)
+            argon2.PasswordHasher().verify(password, user_hash)
         except argon2.exceptions.VerifyMismatchError:
             is_valid = False
             result = falcon.HTTP_401, "Incorrect password"
