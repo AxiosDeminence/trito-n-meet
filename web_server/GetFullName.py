@@ -17,7 +17,7 @@ class GetFullName:
             email = str.strip(form.get("email"))
         except (KeyError, TypeError):
             is_valid = False
-            result = {"JSON Format Error"}
+            result = "JSON Format Error"
         else:
             result = {"email": email}
 
