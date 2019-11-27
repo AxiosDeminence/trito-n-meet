@@ -2,8 +2,8 @@ package com.example.tritonmeet;
 
 import android.content.Context;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.SyncHttpClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +37,8 @@ public class Group {
     }
 
     public String getOwnerFullName() {
-        AsyncHttpClient client = new AsyncHttpClient();
+
+        SyncHttpClient client = new SyncHttpClient();
         JSONObject user;
         StringEntity entity;
 
@@ -50,16 +51,12 @@ public class Group {
             throw new IllegalArgumentException("unexpected error", e);
         }
 
-        client.get(context, "https://triton-meet.herokuapp.com/getFullName", entity, "application/json", new AsyncHttpResponseHandler() {
+        client.get(context, "https://triton-meet.herokuapp.com/getFullName", entity, "application/json", new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                String stringData = new String(responseBody);
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 
-                JSONObject fullNameObject;
                 try {
-                    fullNameObject = new JSONObject(stringData);
-                    fullName = fullNameObject.getString("name");
-
+                    fullName = response.getString("name");
                 }
                 catch (JSONException e) {
                     throw new IllegalArgumentException("unexpected error", e);
@@ -67,8 +64,8 @@ public class Group {
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                fullName = "Error";
+            public void onFailure(int statusCode, Header[] headers, Throwable error, JSONObject errorResponse) {
+                fullName = "Error " + statusCode;
             }
         });
         return fullName;

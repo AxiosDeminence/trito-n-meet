@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class GroupsFragment extends Fragment {
     private FloatingActionButton addGroupButton;
     private String groupName;
     private ExpandableListView expandableListView;
-    private CustomExpandableListAdapter expandableListAdapter;
+    private GroupsExpandableListAdapter expandableListAdapter;
     private List<String> expandableListNames;
     private HashMap<String, Group> listGroups = new HashMap<>();
     private int lastExpandedPosition = -1;
@@ -82,6 +83,7 @@ public class GroupsFragment extends Fragment {
 
                 // Parse JSON Object and populate hash map
                 String stringData = new String(responseBody);
+                Log.i("Group JSON Object", stringData);
 
                 JSONObject objectData;
                 JSONArray groups;
@@ -109,18 +111,18 @@ public class GroupsFragment extends Fragment {
                     }
 
                     listGroups.put(nameOfGroup, new Group(nameOfGroup, nameOfOwner, getActivity()));
-
                 }
 
                 expandableListNames = new ArrayList<>(listGroups.keySet());
-                expandableListAdapter = new CustomExpandableListAdapter(getActivity(), GroupsFragment.this,currentUser, expandableListNames, listGroups);
+                Collections.sort(expandableListNames);
+                expandableListAdapter = new GroupsExpandableListAdapter(getActivity(), GroupsFragment.this,currentUser, expandableListNames, listGroups);
                 expandableListView.setAdapter(expandableListAdapter);
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 String data = new String(responseBody);
-                Log.d("ERROR_MESSAGE", data);
+                Log.d("ERROR_MESSAGE FOR GROUP", data);
             }
         });
 

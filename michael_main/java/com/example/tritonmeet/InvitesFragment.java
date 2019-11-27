@@ -29,7 +29,7 @@ import cz.msebera.android.httpclient.entity.StringEntity;
 public class InvitesFragment extends Fragment {
 
     private ListView listView;
-    private CustomListAdapter listAdapter;
+    private InvitesListAdapter listAdapter;
     private List<String> listOfInvites;
     private HashMap<String, Group> hashGroup = new HashMap<>();
     private String myURL = "https://triton-meet.herokuapp.com/manageGroups";
@@ -66,6 +66,7 @@ public class InvitesFragment extends Fragment {
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 // Parse JSON Object and populate hash map
                 String stringData = new String(responseBody);
+                Log.i("Invites JSON Object", stringData);
 
                 JSONObject objectData;
                 JSONArray invites;
@@ -95,7 +96,7 @@ public class InvitesFragment extends Fragment {
                     hashGroup.put(nameOfGroup, new Group(nameOfGroup, nameOfOwner, getActivity()));
                 }
                 listOfInvites = new ArrayList<>(hashGroup.keySet());
-                listAdapter = new CustomListAdapter(getActivity(), currentUser, listOfInvites, hashGroup);
+                listAdapter = new InvitesListAdapter(getActivity(), currentUser, listOfInvites, hashGroup);
                 listView.setAdapter(listAdapter);
             }
 
