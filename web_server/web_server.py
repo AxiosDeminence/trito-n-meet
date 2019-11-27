@@ -15,6 +15,8 @@ PORT = "5432"
 CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
                % (DATABASE, USER, PASSWORD, HOST, PORT))
 
+from CreateUser import CreateUser
+
 class GetFullName():
     def on_get(self, req, resp):
         try:
@@ -191,62 +193,62 @@ class ManageGroupEvents():
         resp.media = {"message": "Added group event to all members"}
         return
 
-class CreateUser():
-    def on_post(self, req, resp):
-        try:
-            email = str.strip(req.media.get("email"))
-            full_name = str.strip(req.media.get("fullName"))
-            password = str.strip(req.media.get("password"))
-            confirm_password = str.strip(req.media.get("confirmPassword"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Format Error"}
-            return
-
-        if password != confirm_password:
-            resp.status = falcon.HTTP_406
-            resp.media = {"message": "Passwords are not the same"}
-            return
-        if not (re.match(r'[A-Z]', password)
-                or re.match(r'[a-z]', password)
-                or re.match(r'[0-9]', password)
-                or re.match(r'[!@#$%^&*()]', password)):
-            resp.status = falcon.HTTP_406
-            resp.media = {"message": "Does not meet password complexity"}
-            return
-        if len(password) < 6 or len(password) > 30:
-            resp.status = falcon.HTTP_406
-            resp.media = {"mesage": "Password not of correct length"}
-            return
-        if not email.endswith("@ucsd.edu"):
-            resp.status = falcon.HTTP_406
-            resp.media = {"message": "Not a valid ucsd email"}
-            return
-
-        hasher = PasswordHasher()
-        hash = hasher.hash(password)
-
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-            with con:
-                cur = con.cursor()
-                cur.execute("""
-                            insert into user_info(email, full_name, hash)
-                                values(%s, %s, %s);""",
-                            [email, full_name, hash])
-                con.commit()
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
-            return
-        except psycopg2.errors.UniqueViolation:
-            resp.status = falcon.HTTP_406
-            resp.media = {"message": "User already exists"}
-            return
-
-        resp.status = falcon.HTTP_201
-        resp.media = {"message": "User created"}
-        return
+#class CreateUser():
+#    def on_post(self, req, resp):
+#        try:
+#            email = str.strip(req.media.get("email"))
+#            full_name = str.strip(req.media.get("fullName"))
+#            password = str.strip(req.media.get("password"))
+#            confirm_password = str.strip(req.media.get("confirmPassword"))
+#        except (KeyError, TypeError):
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "JSON Format Error"}
+#            return
+#
+#        if password != confirm_password:
+#            resp.status = falcon.HTTP_406
+#            resp.media = {"message": "Passwords are not the same"}
+#            return
+#        if not (re.match(r'[A-Z]', password)
+#                or re.match(r'[a-z]', password)
+#                or re.match(r'[0-9]', password)
+#                or re.match(r'[!@#$%^&*()]', password)):
+#            resp.status = falcon.HTTP_406
+#            resp.media = {"message": "Does not meet password complexity"}
+#            return
+#        if len(password) < 6 or len(password) > 30:
+#            resp.status = falcon.HTTP_406
+#            resp.media = {"mesage": "Password not of correct length"}
+#            return
+#        if not email.endswith("@ucsd.edu"):
+#            resp.status = falcon.HTTP_406
+#            resp.media = {"message": "Not a valid ucsd email"}
+#            return
+#
+#        hasher = PasswordHasher()
+#        hash = hasher.hash(password)
+#
+#        try:
+#            con = psycopg2.connect(CREDENTIALS)
+#            with con:
+#                cur = con.cursor()
+#                cur.execute("""
+#                            insert into user_info(email, full_name, hash)
+#                                values(%s, %s, %s);""",
+#                            [email, full_name, hash])
+#                con.commit()
+#        except psycopg2.OperationalError:
+#            resp.status = falcon.HTTP_503
+#            resp.media = {"message": "Connection terminated"}
+#            return
+#        except psycopg2.errors.UniqueViolation:
+#            resp.status = falcon.HTTP_406
+#            resp.media = {"message": "User already exists"}
+#            return
+#
+#        resp.status = falcon.HTTP_201
+#        resp.media = {"message": "User created"}
+#        return
 
 class UserLogin():
     def on_post(self, req, resp):
