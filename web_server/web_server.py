@@ -630,7 +630,7 @@ class ManageGroups():
         
 
 API = falcon.API()
-CREATEUSER_ENDPOINT = CreateUser()
+CREATEUSER_ENDPOINT = CreateUser(CREDENTIALS)
 USERLOGIN_ENDPOINT = UserLogin()
 MANAGEEVENTS_ENDPOINT = ManageEvents()
 MANAGEGROUPS_ENDPOINT = ManageGroups()
