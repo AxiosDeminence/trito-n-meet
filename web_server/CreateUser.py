@@ -5,6 +5,7 @@ import psycopg2
 import falcon
 from argon2 import PasswordHasher
 
+
 class CreateUser:
     _CREDENTIALS = None
 
@@ -21,7 +22,7 @@ class CreateUser:
             confirm_password = str.strip(form.get("confirmPassword"))
         except (KeyError, TypeError):
             is_valid = False
-            result = {"JSON Format Error"}
+            result = "JSON Format Error"
         else:
             result = {"email": email, "full_name": full_name,
                       "password": password,
@@ -86,7 +87,7 @@ class CreateUser:
             resp.media = {"message": form_validation.get("result")}
             return
 
-        hasher = lambda x: PasswordHasher().hash(x)
+        def hasher(x): return PasswordHasher().hash(x)
         user_hash = hasher(form_validation.get("result"))
 
         entry_creation = CreateUser.create_user_entry(form.get("full_name"),

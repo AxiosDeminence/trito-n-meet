@@ -1,4 +1,3 @@
-import re
 import datetime
 
 import falcon
@@ -17,6 +16,7 @@ CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
 
 from CreateUser import CreateUser
 from GetFullName import GetFullName
+from UserLogin import UserLogin
 
 #class GetFullName():
 #    def on_get(self, req, resp):
@@ -251,46 +251,46 @@ class ManageGroupEvents():
 #        resp.media = {"message": "User created"}
 #        return
 
-class UserLogin():
-    def on_post(self, req, resp):
-        try:
-            email = str.strip(req.media.get("email"))
-            password = str.strip(req.media.get("password"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Format Error"}
-            return
-
-        hasher = PasswordHasher()
-        user_info = None
-
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-            with con:
-                cur = con.cursor()
-                cur.execute("""
-                            select hash from user_info
-                                where email = %s;""", [email])
-                user_info = cur.fetchone()
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
-            return
-        except psycopg2.ProgrammingError:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "User does not exist"}
-            return
-
-        try:
-            hasher.verify(user_info[0], password)
-        except argon2.exceptions.VerifyMismatchError:
-            resp.status = falcon.HTTP_401
-            resp.media = {"message": "Incorrect password"}
-            return
-
-        resp.status = falcon.HTTP_200
-        resp.media = {"message": "User logged in"}
-        return
+#class UserLogin():
+#    def on_post(self, req, resp):
+#        try:
+#            email = str.strip(req.media.get("email"))
+#            password = str.strip(req.media.get("password"))
+#        except (KeyError, TypeError):
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "JSON Format Error"}
+#            return
+#
+#        hasher = PasswordHasher()
+#        user_info = None
+#
+#        try:
+#            con = psycopg2.connect(CREDENTIALS)
+#            with con:
+#                cur = con.cursor()
+#                cur.execute("""
+#                            select hash from user_info
+#                                where email = %s;""", [email])
+#                user_info = cur.fetchone()
+#        except psycopg2.OperationalError:
+#            resp.status = falcon.HTTP_503
+#            resp.media = {"message": "Connection terminated"}
+#            return
+#        except psycopg2.ProgrammingError:
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "User does not exist"}
+#            return
+#
+#        try:
+#            hasher.verify(user_info[0], password)
+#        except argon2.exceptions.VerifyMismatchError:
+#            resp.status = falcon.HTTP_401
+#            resp.media = {"message": "Incorrect password"}
+#            return
+#
+#        resp.status = falcon.HTTP_200
+#        resp.media = {"message": "User logged in"}
+#        return
 
 class ManageEvents():
     def on_get(self, req, resp): # Ask for all events of a user
@@ -632,7 +632,7 @@ class ManageGroups():
 
 API = falcon.API()
 CREATEUSER_ENDPOINT = CreateUser(CREDENTIALS)
-USERLOGIN_ENDPOINT = UserLogin()
+USERLOGIN_ENDPOINT = UserLogin(CREDENTIALS)
 MANAGEEVENTS_ENDPOINT = ManageEvents()
 MANAGEGROUPS_ENDPOINT = ManageGroups()
 GETFULLNAME_ENDPOINT = GetFullName(CREDENTIALS)
