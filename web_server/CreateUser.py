@@ -6,10 +6,10 @@ import falcon
 from argon2 import PasswordHasher
 
 class CreateUser:
-    CREDENTIALS = None
+    _CREDENTIALS = None
 
     def __init__(self, database_credentials):
-        CreateUser.CREDENTIALS = database_credentials
+        CreateUser._CREDENTIALS = database_credentials
 
     @staticmethod
     def form_parser(form):
@@ -53,7 +53,7 @@ class CreateUser:
     def create_user_entry(email, full_name, user_hash):
         is_success = False
         try:
-            with closing(psycopg2.connect(CreateUser.CREDENTIALS)) as con:
+            with closing(psycopg2.connect(CreateUser._CREDENTIALS)) as con:
                 with con, con.cursor() as cur:
                     cur.excecute("""
                                  insert into user_info(email, full_name, hash)
@@ -65,7 +65,7 @@ class CreateUser:
             result = falcon.HTTP_406, "User already exists"
         else:
             is_success = True
-            result = "User entry created"
+            result = falcon.HTTP_201, "User entry created"
 
         return {"is_success": is_success, "result": result}
 
@@ -93,9 +93,5 @@ class CreateUser:
                                                       form.get("email"),
                                                       user_hash)
 
-        if not entry_creation.get("is_success"):
-            resp.status = entry_creation.get("result")[0]
-            resp.media = {"message": entry_creation.get("result")[1]}
-        else:
-            resp.status = falcon.HTTP_200
-            resp.media = {"message": "User created"}
+        resp.status = entry_creation.get("result")[0]
+        resp.media = {"message": entry_creation.get("result")[1]}

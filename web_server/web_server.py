@@ -16,38 +16,39 @@ CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
                % (DATABASE, USER, PASSWORD, HOST, PORT))
 
 from CreateUser import CreateUser
+from GetFullName import GetFullName
 
-class GetFullName():
-    def on_get(self, req, resp):
-        try:
-            email = str.strip(req.media.get("email"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Format Error"}
-            return
-
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-            with con:
-                cur = con.cursor()
-                cur.execute("""
-                            select full_name from user_info
-                                where email=%s;""",
-                            [email])
-                name = cur.fetchone()[0]
-                print(name)
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
-            return
-        except psycopg2.ProgrammingError:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "User does not exist"}
-            return
-
-        resp.status = falcon.HTTP_200
-        resp.media = {"name": name}
-        return
+#class GetFullName():
+#    def on_get(self, req, resp):
+#        try:
+#            email = str.strip(req.media.get("email"))
+#        except (KeyError, TypeError):
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "JSON Format Error"}
+#            return
+#
+#        try:
+#            con = psycopg2.connect(CREDENTIALS)
+#            with con:
+#                cur = con.cursor()
+#                cur.execute("""
+#                            select full_name from user_info
+#                                where email=%s;""",
+#                            [email])
+#                name = cur.fetchone()[0]
+#                print(name)
+#        except psycopg2.OperationalError:
+#            resp.status = falcon.HTTP_503
+#            resp.media = {"message": "Connection terminated"}
+#            return
+#        except psycopg2.ProgrammingError:
+#            resp.status = falcon.HTTP_400
+#            resp.media = {"message": "User does not exist"}
+#            return
+#
+#        resp.status = falcon.HTTP_200
+#        resp.media = {"name": name}
+#        return
 
 class ManageGroupEvents():
     def on_get(self, req, resp):
