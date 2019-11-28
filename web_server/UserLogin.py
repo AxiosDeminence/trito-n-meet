@@ -38,7 +38,7 @@ class UserLogin:
                     user_hash = cur.fetchone()[0]
         except psycopg2.OperationalError:
             result = falcon.HTTP_503, "Generic database error"
-        except psycopg2.ProgrammingError:
+        except TypeError: # None type return on no match
             result = falcon.HTTP_406, "User does not exist"
         else:
             is_success = True
