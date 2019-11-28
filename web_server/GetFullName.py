@@ -31,7 +31,7 @@ class GetFullName:
                 with con, con.cursor() as cur:
                     cur.execute("""
                                 select full_name from user_info
-                                    where email=%s;""",
+                                    where email = %s;""",
                                 [email])
                     name = cur.fetchone()[0]
         except psycopg2.OperationalError:
@@ -51,7 +51,7 @@ class GetFullName:
             resp.media = {"message": form.get("result")}
             return
 
-        email = form.get("result")
+        email = form.get("result").get("email")
         fullname_retrieval = GetFullName.fetch_user_name(email)
 
         resp.status = fullname_retrieval.get("result")[0]
