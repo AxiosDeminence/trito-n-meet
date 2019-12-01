@@ -645,6 +645,7 @@ class ManageGroups:
                         "get_membership": get_membership,
                         "organize_groups": organize_groups}
 
+        print(function_map.get(function))
         return function_map.get(function)(*args)
 
     def on_get(self, req, resp):
