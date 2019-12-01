@@ -405,7 +405,7 @@ class ManageEvents:
 
         function_map = {"form_parse": form_parse,
                         "get_user_events": get_user_events}
-        return function_map.get(function)(args)
+        return function_map.get(function)(*args)
 
     def on_get(self, req, resp): # Ask for all events of a user
         form = ManageEvents.get_functions("form_parse", req.media)
@@ -553,7 +553,7 @@ class ManageEvents:
                         "edit_personal_event": edit_personal_event,
                         "delete_personal_event": delete_personal_event}
 
-        return function_map.get(function)(args)
+        return function_map.get(function)(*args)
 
 
     def on_post(self, req, resp): # Will include edit and create
@@ -613,14 +613,14 @@ class ManageGroups:
                     with con, con.cursor() as cur:
                         cur.execute("""
                                     select * from groups
-                                        where any(members) = %s or
+                                        where %s = any(members) or
                                               owner_email = %s;""",
                                     [user, user])
                         joined_groups = cur.fetchall()
 
                         cur.execute("""
                                     select * from groups
-                                        where any(invites) = %s;""",
+                                        where %s = any(invites);""",
                                     [user])
                         invitations = cur.fetchall()
             except psycopg2.OperationalError:
@@ -837,7 +837,7 @@ class ManageGroups:
                         "invite_to_group": invite_to_group,
                         "join_group": join_group,
                         "remove_from_group": remove_from_group}
-        return function_map.get(function)(args)
+        return function_map.get(function)(*args)
 
     def on_post(self, req, resp):
         form = ManageGroups.post_functions("form_parse", req.media)
