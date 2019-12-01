@@ -275,7 +275,7 @@ class ManageGroupEvents():
             event_builder["timeSlot"] = (x["startTime"], x["endTime"])
             event_builder["dateRange"] = (x["startDate"],
                           x["endDate"])
-            event_builder["daysOfWeek"] = [time.strptime(y, "%A").tm_wday for y in x["daysOfWeek"]]
+            event_builder["daysOfWeek"] = [datetime.datetime.strptime(y, "%A").tm_wday for y in x["daysOfWeek"]]
             mapped_events.append(event_builder)
 
         starting_times = []
@@ -284,7 +284,7 @@ class ManageGroupEvents():
             for event in mapped_events:
                 if event["endDate"] == event["startDate"] == day:
                     today_events.append(event)
-                elif (event["endDate"] >= datetime.date.today() and event["startDate"] <= datetime.data.today()
+                elif (event["endDate"] >= datetime.date.today() and event["startDate"] <= datetime.date.today()
                       and day.weekday() in event["daysOfweek"]):
                     today_events.append(event)
             today_events = [x for x in today_events if x >= datetime.datetime.now()]
@@ -313,7 +313,7 @@ class ManageGroupEvents():
             next_time_slot = condensed_times[next_time_slot_index]
             while start.date() == day.date() and next_time_slot_index < len(condensed_times):
                 i = 0
-                while start + datetime.timedelta(minutes=15 * i) + length_of_event <= next_time_slot[0] and (start + datetime.timdelta(minutes=15 * i)).date() == day.date():
+                while start + datetime.timedelta(minutes=15 * i) + length_of_event <= next_time_slot[0] and (start + datetime.timedelta(minutes=15 * i)).date() == day.date():
                     legal_times.append(start + datetime.timedelta(minutes=15 * i))
                     i += 1
                 start = next_time_slot[1]
@@ -589,19 +589,18 @@ class ManageGroups:
             is_valid = True
             try:
                 result = {}
-                result.put("action", str.strip(form.get("action")))
-                result.put("group_name", str.strip(form.get("groupName")))
-                result.put("creator_email", str.strip(form.get("owner")))
+                result["action"] = str.strip(form.get("action"))
+                result["group_name"] =  str.strip(form.get("groupName"))
+                result["creator_email"] = str.strip(form.get("owner"))
 
                 if result.get("action") == "invite":
-                    result.put("users",
-                               [str.strip(x)
-                                for x in form.get("users").split(",")])
+                    result["users"] = [str.strip(x)
+                                       for x in form.get("users").split(",")]
                 elif result.get("action") in ("join", "remove"):
-                    result.put("member_email", str.strip(form.get("email")))
+                    result["member_email"] = str.strip(form.get("email"))
 
-                if action not in ("create", "invite", "join", "remove",
-                                   "delete"):
+                if result.get("action") not in ("create", "invite", "join",
+                                                "remove", "delete"):
                     raise KeyError
             except (KeyError, TypeError):
                 is_valid = False
@@ -742,7 +741,8 @@ class ManageGroups:
 
             return {"is_success": is_success, "result": result}
 
-        function_map = {"create_group": create_group,
+        function_map = {"form_parse": form_parse,
+                        "create_group": create_group,
                         "delete_group": delete_group,
                         "invite_to_group": invite_to_group,
                         "join_group": join_group,
@@ -785,7 +785,7 @@ class ManageGroups:
         resp.status = result.get("result")[0]
         resp.media = result.get("result")[1]
         if action == "invite" and result.get("is_success"):
-            resp.media.put("message", "Attempted inviting users")
+            resp.media["message", "Attempted inviting users"]
         
 
 API = falcon.API()
