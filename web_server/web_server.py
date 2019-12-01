@@ -666,7 +666,7 @@ class ManageGroups:
         invitations = membership.get("result").get("invitations")
         keys = ["groupName", "owner", "members", "invited"]
 
-        organized_groups = ManageGroups.get_functions("organize_data", keys,
+        organized_groups = ManageGroups.get_functions("organize_groups", keys,
                                                       joined_groups,
                                                       invitations)
 
