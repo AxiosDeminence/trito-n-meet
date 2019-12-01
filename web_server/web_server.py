@@ -584,7 +584,7 @@ class ManageEvents:
                                                   form.get("event_id"),
                                                   form.get("user"))
         elif form.get("action") == "delete":
-            result = ManageEvents.post_functions("delete_personal_events",
+            result = ManageEvents.post_functions("delete_personal_event",
                                                  form.get("event_id"),
                                                  form.geT("user"))
 
