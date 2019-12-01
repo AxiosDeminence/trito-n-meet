@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/viewButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:background="@color/colorPrimary"
+            android:text="@string/view"
+            android:textColor="#FFFFFF"
+            android:onClick="view">
+        </Button>
+
+        <Button
+            android:id="@+id/inviteButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:background="@color/colorPrimaryDark"
+            android:text="@string/invite"
+            android:textColor="#FFFFFF">
+        </Button>
+
+        <Button
+            android:id="@+id/leaveButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:background="@color/colorPrimaryDark"
+            android:text="@string/leave"
+            android:textColor="#FFFFFF">
+        </Button>
+
+
+        <Button
+            android:id="@+id/deleteButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:background="@color/colorAccent"
+            android:text="@string/delete"
+            android:textColor="#FFFFFF">
+        </Button>
+
+    </LinearLayout>
+
+</LinearLayout>

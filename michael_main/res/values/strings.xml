@@ -1,0 +1,78 @@
+<resources>
+    <string name="app_name">Triton Meet</string>
+    <string name="button_label_login">Login</string>
+    <string name="text_name_register">Register</string>
+    <string name="text_name_forgot">Forgot password?</string>
+    <string name="hint_name_email">Email</string>
+    <string name="hint_name_pass">Password</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="cpassword">Confirm password</string>
+    <string name="fullname">Full Name</string>
+    <string name="register">Register</string>
+    <string name="check1">Placeholder 2</string>
+    <string name="usercheck1">Placeholder 1</string>
+    <string name="emailcheck1">Placeholder 2</string>
+    <string name="passwordcheck1">Placeholder 3</string>
+    <string name="passCheck">At least 6 characters with at least 1: uppercase, lowercase, number, symbol</string>
+    <string name="emailCheck2">Email Check</string>
+    <string name="view">View</string>
+    <string name="invite">Invite</string>
+    <string name="leave">Leave</string>
+    <string name="delete">Delete</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_add_event">Add Event</string>
+    <string name="title_activity_reset_password">Reset Password</string>
+    <string-array name="names">
+        <item>No</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+    </string-array>
+    <string name="large_text">
+        "Tutorial \n\n"
+
+        "Welcome to Triton Meet created by UCSD students for UCSD Students. Within this app, you "
+        "can create a personalized schedule which can include your class schedule, daily routine, "
+        "and club events. Best of all, you can also add your classmates' contacts into a group in "
+        "order to compare schedules. Triton Meet will find different time slots when everybody "
+        "can meet up. \n \n"
+
+        "In order to do so, please create an account with your first name, last name, and UCSD "
+        "e-mail and create a password. After registering, you will see an empty home screen. This "
+        "is where you can view all of your current and upcoming events on a weekly scale.\n\n"
+
+        "To add an event, press the + button in the bottom right corner. Name the event, set the "
+        "start and end times, and set state and end dates. There is an option to set the event as "
+        "an one-time event or as a repeating event on a weekly basis. If it is repeating, select "
+        "the days on which the event is recurring. Confirm all changes.\n\n"
+
+        "Now that you have added some events to your schedule, you can share it with your "
+        "classmates! To share, first form a group by going to the navigation tab on the side "
+        "and then GROUPS. You are allowed to create at most five different groups - each with its "
+        "own unique name - but you can be a part of as many groups as you like. To add people to "
+        "a group, input their UCSD e-mails.\n\n"
+
+        "Additionally, Instead of creating your own group, your classmates can add you to their "
+        "own groups. Turn on notifications to receive a message when somebody tries to add you. "
+        "To accept the invitation, simply accept it. Otherwise, please press decline.\n\n"
+
+        "Thank you for downloading this app! We hope you will enjoy Triton Meet and use it to "
+        "plan hang-outs, group projects, and other events. For more information or to leave "
+        "suggestions, please contact tritonmeet@gmail.com.“
+    </string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
