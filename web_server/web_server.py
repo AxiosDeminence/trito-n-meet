@@ -14,7 +14,8 @@ PORT = "5432"
 
 CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
                % (DATABASE, USER, PASSWORD, HOST, PORT))
-               
+
+
 class CreateUser:
     @staticmethod
     def form_parser(form):
@@ -224,7 +225,7 @@ class UserLogin:
                                                  user_hash)
         resp.status = verification.get("result")[0]
         resp.media = {"message": verification.get("result")[1]}
-        
+
 
 class ManageGroupEvents():
     def on_get(self, req, resp):
@@ -249,7 +250,7 @@ class ManageGroupEvents():
                                 where group_name=%s and owner_email=%s;""",
                             [group_name, creator])
                 users = cur.fetchone()[1].append(cur.fetchone()[0])
-                
+
                 events = []
                 for user in users:
                     cur.execute("""
@@ -264,7 +265,7 @@ class ManageGroupEvents():
 
         keys = ["startTime", "endTime", "startDate", "endDate",
                 "daysOfWeek"]
-            
+
         events = [dict((key, value) for key, value in zip(keys, x))
                                     for x in events]
 
@@ -289,7 +290,7 @@ class ManageGroupEvents():
                     today_events.append(event)
             today_events = [x for x in today_events if x >= datetime.datetime.now()]
             today_events = [x["timeSlot"] for x in today_events]
-                   
+
             condensed_times = []
             event = today_events[0]
             for x in today_events[1:]:
@@ -301,13 +302,13 @@ class ManageGroupEvents():
             else:
                 condensed_times.append(event)
 
-            condensed_times = sorted(condensed_times, key = lambda x: x[0])
+            condensed_times = sorted(condensed_times, key=lambda x: x[0])
             condensed_times = [(x[0] - (x[0] - datetime.datetime.min) % datetime.timedelta(minutes=15),
                                 x[1] + (datetime.datetime.min - x[1]) % datetime.timedelta(minutes=15))
                                 for x in condensed_times]
-            start = datetime.datetime.now() 
+            start = datetime.datetime.now()
             start = start + (datetime.datetime.min - start) % datetime.timedelta(hours=1)
-                    
+
             legal_times = []
             next_time_slot_index = 0
             next_time_slot = condensed_times[next_time_slot_index]
@@ -320,11 +321,11 @@ class ManageGroupEvents():
                 next_time_slot_index += 1
                 next_time_slot = condensed_times[next_time_slot_index]
             starting_times.extend([datetime.datetime.combine(day, x) for x in legal_times])
-            
+
             resp.status = falcon.HTTP_200
             resp.media = {"validStartingTimes": starting_times}
             return
-            
+
     def on_post(self, req, resp):
         try:
             group_name = str.strip(req.media.get("groupName"))
@@ -337,10 +338,10 @@ class ManageGroupEvents():
             resp.status = falcon.HTTP_400
             resp.media = {"message": "JSON Format Error"}
             return
-        
+
         try:
             con = psycopg2.connect(CREDENTIALS)
-            
+
             with con:
                 cur = con.cursor()
                 cur.execute("""
@@ -350,7 +351,7 @@ class ManageGroupEvents():
                 result = cur.fetchone()
                 all_members = result[1].replace("{", "").replace("}", "").split(",")
                 all_members.append(result[0])
-                
+
                 for x in all_members:
                     cur.execute("""
                                 insert into events(owner_email, event_name,
@@ -365,13 +366,13 @@ class ManageGroupEvents():
             resp.status = falcon.HTTP_503
             resp.media = {"message": "Connection terminated"}
             return
-         
+
         resp.status = falcon.HTTP_200
         resp.media = {"message": "Added group event to all members"}
         return
 
 
-class ManageEvents():
+class ManageEvents:
     @staticmethod
     def get_functions(function, *args):
         def form_parse(form):
@@ -420,10 +421,10 @@ class ManageEvents():
             resp.media = {"message": events.get("result")[1]}
             return
         events = events.get("result")
-        
+
         keys = ["eventID", "email", "eventName", "startTime", "endTime",
                 "startDate", "endDate", "daysOfWeek"]
-            
+
         events = [dict((key, value) for key, value in zip(keys, x))
                                     for x in events]
 
@@ -439,67 +440,156 @@ class ManageEvents():
         resp.status = falcon.HTTP_200
         resp.media = events
 
+    @staticmethod
+    def post_functions(function, *args):
+        def form_parse(form):
+            is_valid = True
+            result = {}
+            try:
+                result["action"] = str.strip(form.get("action"))
+                if result.get("action") not in ("create", "edit", "delete"):
+                    raise KeyError
+
+                result["user"] = str.strip(form.get("email"))
+
+                if result.get("action") in ("delete", "edit"):
+                    result["event_id"] = str.strip(form.get("eventID"))
+                if result.get("action") in ("edit", "create"):
+                    result["event_name"] = str.strip(form.get("eventName"))
+                    result["start_time"] = datetime.datetime.strptime(
+                                               str.strip(form.get("startTime")),
+                                               "%H:%M"
+                                           ).time()
+                    result["end_time"] = datetime.datetime.strptime(
+                                             str.strip(form.get("endtime")),
+                                             "%H:%M"
+                                         ).time()
+                    result["start_date"] = datetime.datetime.strptime(
+                                               str.strip(form.get("startDate")),
+                                               "%m/%d/%Y"
+                                           ).time()
+                    result["end_date"] = datetime.datetime.strptime(
+                                               str.strip(form.get("endDate")),
+                                               "%m/%d/%Y"
+                                           ).time()
+                    result["days_of_week"] = [x for x
+                                              in form.get("daysOfWeek").\
+                                                  split(",")
+                                              if x != ""]
+            except (TypeError, KeyError):
+                is_valid = False
+                result = "JSON Form Error"
+
+            return {"is_valid": is_valid, "result": result}
+
+        def create_personal_event(owner_email, event_name, start_time, end_time,
+                                  start_date, end_date, days_of_week):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    insert into events(owner_email, event_name,
+                                                       start_time, end_time,
+                                                       start_date, end_date,
+                                                       days_of_week)
+                                        values(%s,%s,%s,%s,%s,%s,%s);""",
+                                    [owner_email, event_name, start_time,
+                                     end_time, start_date, end_date,
+                                     days_of_week])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                is_success = True
+                result = falcon.HTTP_201, "Event created successfully"
+
+            return {"is_success": is_success, "result": result}
+
+        def edit_personal_event(event_name, start_time, end_time, start_date,
+                                end_date, days_of_week, event_id, owner_email):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    update events set event_name=%s,
+                                                      start_time=%s,
+                                                      end_time=%s,
+                                                      start_date=%s,
+                                                      end_date=%s,
+                                                      days_of_week=%s,
+                                        where event_id=%s and owner_email=%s;
+                                    """,
+                                    [event_name, start_time, end_time,
+                                     start_date, end_date, days_of_week,
+                                     event_id, owner_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                is_success = True
+                result = falcon.HTTP_200, "Event edited successfully"
+
+            return {"is_success": is_success, "result": result}
+
+        def delete_personal_event(event_id, owner_email):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    delete from events
+                                        where event_id=%s and owner_email=%s;
+                                    """, [event_id, owner_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database erorr"
+            else:
+                is_success = True
+                result = falcon.HTTP_200, "Event deleted successfully"
+
+            return {"is_success": is_success, "result": result}
+
+        function_map = {"form_parse": form_parse,
+                        "create_personal_event": create_personal_event,
+                        "edit_personal_event": edit_personal_event,
+                        "delete_personal_event": delete_personal_event}
+
+        return function_map.get(function)(args)
+
+
     def on_post(self, req, resp): # Will include edit and create
-        try:
-            action = str.strip(req.media.get("action"))
-            user = str.strip(req.media.get("email"))
-
-            if action in ("delete", "edit"):
-                event_id = req.media.get("eventID")
-            if action in ("edit", "create"):
-                event_name = str.strip(req.media.get("eventName"))
-                start_time = datetime.datetime.strptime(str.strip(req.media.get("startTime")), "%H:%M").time()
-                end_time = datetime.datetime.strptime(str.strip(req.media.get("endTime")), "%H:%M").time()
-                start_date = datetime.datetime.strptime(str.strip(req.media.get("startDate")), "%m/%d/%Y").date()
-                end_date = datetime.datetime.strptime(str.strip(req.media.get("endDate")), "%m/%d/%Y").date()
-                days_of_week = [x for x in req.media.get("daysOfWeek").split(",") if x != ""]
-            if action not in ("delete", "edit", "create"):
-                raise KeyError("Not a valid action")
-        except (TypeError, KeyError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Form Error"}
+        form = ManageEvents.post_functions("form_parse", req.media)
+        if not form.get("is_valid"):
+            resp.status = falcon.HTTP_406
+            resp.media = {"message": form.get("result")[1]}
             return
+        form = form.get("result")
 
-        try:
-            con = psycopg2.connect(CREDENTIALS)
+        if form.get("action") == "create":
+            result = ManageEvents.post_functions("create_personal_event",
+                                                 form.get("user"),
+                                                 form.get("event_name"),
+                                                 form.get("start_time"),
+                                                 form.get("end_time"),
+                                                 form.get("start_date"),
+                                                 form.get("end_date"),
+                                                 form.get("days_of_week"))
+        elif form.get("action") == "edit":
+            result = ManageEvents.post_functions("edit_personal_event",
+                                                  form.get("event_name"),
+                                                  form.get("start_time"),
+                                                  form.get("end_time"),
+                                                  form.get("start_date"),
+                                                  form.get("end_date"),
+                                                  form.get("days_of_week"),
+                                                  form.get("event_id"),
+                                                  form.get("user"))
+        elif form.get("action") == "delete":
+            result = ManageEvents.post_functions("delete_personal_events",
+                                                 form.get("event_id"),
+                                                 form.geT("user"))
 
-            with con:
-                cur = con.cursor()
-                if action == "edit":
-                    cur.execute("""
-                                update events set event_name=%s, start_time=%s,
-                                                  end_time=%s, start_date=%s,
-                                                  end_date=%s, days_of_week=%s
-                                    where event_id = %s and owner_email=%s;""",
-                                [event_name, start_time, end_time, start_date,
-                                 end_date, days_of_week, event_id, user])
-                elif action == "create":
-                    cur.execute("""
-                                insert into events(owner_email, event_name,
-                                                      start_time, end_time,
-                                                      start_date, end_date,
-                                                      days_of_week)
-                                    values(%s,%s,%s,%s,%s,%s,%s);""",
-                                [user, event_name, start_time, end_time,
-                                 start_date, end_date, days_of_week])
-                elif action == "delete":
-                    cur.execute("""
-                                delete from events
-                                    where event_id = %s and owner_email=%s;""",
-                                [event_id, user])
-                con.commit()
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
-            return
-        except psycopg2.ProgrammingError:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "Event does not exist"}
-            return
-
-        resp.status = falcon.HTTP_200
-        resp.media = {"message": "Event managed successfully"}
-        return
+        resp.status = result.get("result")[0]
+        resp.media = {"message": result.get("result")[1]}
 
 class ManageGroups:
     @staticmethod
@@ -527,7 +617,7 @@ class ManageGroups:
                                               owner_email = %s;""",
                                     [user, user])
                         joined_groups = cur.fetchall()
-                        
+
                         cur.execute("""
                                     select * from groups
                                         where any(invites) = %s;""",
@@ -541,11 +631,11 @@ class ManageGroups:
                           "invitations": invitations}
 
             return {"is_success": is_success, "result": result}
-    
+
         def organize_groups(keys, joined_groups, invitations):
             joined_groups = [dict((key, value) for key, value in zip(keys, x))
                                                for x in joined_groups]
-    
+
             invitations = [dict((key, value) for key, value in zip(keys, x))
                                              for x in invitations]
 
@@ -574,7 +664,7 @@ class ManageGroups:
         joined_groups = membership.get("result").get("joined_groups")
         invitations = membership.get("result").get("invitations")
         keys = ["groupName", "owner", "members", "invited"]
-        
+
         organized_groups = ManageGroups.get_functions("organize_data", keys,
                                                       joined_groups,
                                                       invitations)
@@ -632,7 +722,7 @@ class ManageGroups:
             else:
                 is_success = True
                 result = falcon.HTTP_201, "Group created successfully"
-            
+
             return {"is_success": is_success, "result": result}
 
         def delete_group(group_name, owner_email):
@@ -676,7 +766,7 @@ class ManageGroups:
                                          user, user])
                             if not cur.fetchone()[0]:
                                 invalid_users.append(user)
-                                        
+
                         users = [user for user in users
                                  if user not in invalid_users]
 
@@ -693,7 +783,7 @@ class ManageGroups:
                 result = {"valid_invitations": users,
                           "invalid_invitations": invalid_users}
                 result = falcon.HTTP_200, result
-            
+
             return {"is_success": is_success, "result": result}
 
         def join_group(group_name, owner_email, member_email):
@@ -748,7 +838,7 @@ class ManageGroups:
                         "join_group": join_group,
                         "remove_from_group": remove_from_group}
         return function_map.get(function)(args)
-            
+
     def on_post(self, req, resp):
         form = ManageGroups.post_functions("form_parse", req.media)
         if not form.get("is_valid"):
@@ -756,7 +846,7 @@ class ManageGroups:
             resp.media = {"message": form.get("result")}
             return
 
-        form = form.get("result")        
+        form = form.get("result")
         action = form.get("action")
 
         if action == "create":
@@ -786,7 +876,7 @@ class ManageGroups:
         resp.media = result.get("result")[1]
         if action == "invite" and result.get("is_success"):
             resp.media["message", "Attempted inviting users"]
-        
+
 
 API = falcon.API()
 CREATEUSER_ENDPOINT = CreateUser()
