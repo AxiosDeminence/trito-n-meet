@@ -372,32 +372,54 @@ class ManageGroupEvents():
 
 
 class ManageEvents():
+    @staticmethod
+    def get_functions(function, *args):
+        def form_parse(form):
+            is_valid = True
+            try:
+                user = str.strip(form.get("email"))
+            except (KeyError, TypeError):
+                is_valid = False
+                result = "JSON Form Error"
+            else:
+                result = {"user": user}
+
+            return {"is_valid": is_valid, "result": result}
+
+        def get_user_events(user):
+            is_success = True
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    select * from events
+                                        where owner_email = %s""",
+                                    [user])
+                        result = cur.fetchall()
+            except psycopg2.OperationalError:
+                is_success = False
+                result = falcon.HTTP_503, "Generic database error"
+
+            return {"is_success": is_success, "result": result}
+
+        function_map = {"form_parse": form_parse,
+                        "get_user_events": get_user_events}
+        return function_map.get(function)(args)
+
     def on_get(self, req, resp): # Ask for all events of a user
-        try:
-            print(req.media)
-            user = str.strip(req.media.get("email"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Form Error"}
+        form = ManageEvents.get_functions("form_parse", req.media)
+        if not form.get("is_valid"):
+            resp.status = falcon.HTTP_406
+            resp.media = {"message": form.get("result")}
             return
 
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-            with con:
-                cur = con.cursor()
-                cur.execute("""
-                            select * from events
-                                where owner_email = %s""",
-                            [user])
-                events = cur.fetchall()
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
+        user = form.get("result").get("user")
+        events = ManageEvents.get_functions("get_user_events", user)
+        if not events.get("is_success"):
+            resp.status = events.get("result")[0]
+            resp.media = {"message": events.get("result")[1]}
             return
-        except psycopg2.ProgrammingError:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "User does not exist"}
-            return
+        events = events.get("result")
         
         keys = ["eventID", "email", "eventName", "startTime", "endTime",
                 "startDate", "endDate", "daysOfWeek"]
@@ -410,11 +432,12 @@ class ManageEvents():
             x["endTime"] = x["endTime"].strftime("%H:%M")
             x["startDate"] = x["startDate"].strftime("%m/%d/%Y")
             x["endDate"] = x["endDate"].strftime("%m/%d/%Y")
-            x["daysOfWeek"] = list(filter(None, x["daysOfWeek"].replace("{", "").replace("}", "").split(",")))
+            x["daysOfWeek"] = list(filter(None, x["daysOfWeek"]. \
+                                                replace("{", ""). \
+                                                replace("}", "").split(",")))
 
         resp.status = falcon.HTTP_200
         resp.media = events
-        return
 
     def on_post(self, req, resp): # Will include edit and create
         try:
@@ -576,6 +599,10 @@ class ManageGroups:
                                 for x in form.get("users").split(",")])
                 elif result.get("action") in ("join", "remove"):
                     result.put("member_email", str.strip(form.get("email")))
+
+                if action not in ("create", "invite", "join", "remove",
+                                   "delete"):
+                    raise KeyError
             except (KeyError, TypeError):
                 is_valid = False
                 result = "JSON Form Error"
@@ -759,7 +786,6 @@ class ManageGroups:
         resp.media = result.get("result")[1]
         if action == "invite" and result.get("is_success"):
             resp.media.put("message", "Attempted inviting users")
-        
         
 
 API = falcon.API()
