@@ -478,7 +478,7 @@ class ManageEvents():
         resp.media = {"message": "Event managed successfully"}
         return
 
-class ManageGroups():
+class ManageGroups:
     @staticmethod
     def get_functions(function, *args):
         def form_parse(form):
@@ -489,7 +489,7 @@ class ManageGroups():
                 is_valid = False
                 result = "JSON Form Error"
             else:
-                result = {"email": user}
+                result = {"email": email}
 
             return {"is_valid": is_valid, "result": result}
 
@@ -535,7 +535,7 @@ class ManageGroups():
         return function_map.get(function)(*args)
 
     def on_get(self, req, resp):
-        form = ManageGroups.get_functions("form_parse", form)
+        form = ManageGroups.get_functions("form_parse", req.media)
         if not form.get("is_valid"):
             resp.status = falcon.HTTP_406
             resp.media = {"message": form.get("result")}
@@ -570,11 +570,11 @@ class ManageGroups():
                 result.put("group_name", str.strip(form.get("groupName")))
                 result.put("creator_email", str.strip(form.get("owner")))
 
-                if action == "invite":
+                if result.get("action") == "invite":
                     result.put("users",
                                [str.strip(x)
                                 for x in form.get("users").split(",")])
-                elif action in ("join", "remove"):
+                elif result.get("action") in ("join", "remove"):
                     result.put("member_email", str.strip(form.get("email")))
             except (KeyError, TypeError):
                 is_valid = False
@@ -609,7 +609,7 @@ class ManageGroups():
             
             return {"is_success": is_success, "result": result}
 
-        def delete_groups(group_name, owner_email):
+        def delete_group(group_name, owner_email):
             is_success = False
             try:
                 with closing(psycopg2.connect(CREDENTIALS)) as con:
@@ -646,7 +646,7 @@ class ManageGroups():
                                             owner_email=%s and
                                             (%s=any(invites) or
                                              %s=any(members)));""",
-                                        [group_name, creator_email,
+                                        [group_name, owner_email,
                                          user, user])
                             if not cur.fetchone()[0]:
                                 invalid_users.append(user)
@@ -659,7 +659,7 @@ class ManageGroups():
                                         set invites=array_cat(invites,
                                                               %s::citext)
                                         where group_name=%s and owner_email=%s;
-                                    """, [users, group_name, creator_email])
+                                    """, [users, group_name, owner_email])
             except psycopg2.OperationalError:
                 result = falcon.HTTP_503, "Generic database error"
             else:
@@ -682,7 +682,7 @@ class ManageGroups():
                                         where group_name=%s and owner_email=%s
                                             and %s=any(invites);""",
                                     [member_email, member_email, group_name,
-                                     creator_email,member_email])
+                                     owner_email ,member_email])
             except psycopg2.OperationalError:
                 result = falcon.HTTP_503, "Generic database error"
             else:
