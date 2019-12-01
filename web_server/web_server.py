@@ -479,233 +479,286 @@ class ManageEvents():
         return
 
 class ManageGroups():
-    def on_get(self, req, resp):
-        try:
-            user = str.strip(req.media.get("email"))
-        except (KeyError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Form Error"}
-            return
+    @staticmethod
+    def get_functions(function, *args):
+        def form_parse(form):
+            is_valid = True
+            try:
+                email = str.strip(form.get("email"))
+            except (KeyError, TypeError):
+                is_valid = False
+                result = "JSON Form Error"
+            else:
+                result = {"email": user}
 
-        try:
-            con = psycopg2.connect(CREDENTIALS)
+            return {"is_valid": is_valid, "result": result}
 
-            joined_groups = None
-            invitations = None
-            with con:
-                cur = con.cursor()
+        def get_membership(user):
+            is_success = True
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    select * from groups
+                                        where any(members) = %s or
+                                              owner_email = %s;""",
+                                    [user, user])
+                        joined_groups = cur.fetchall()
+                        
+                        cur.execute("""
+                                    select * from groups
+                                        where any(invites) = %s;""",
+                                    [user])
+                        invitations = cur.fetchall()
+            except psycopg2.OperationalError:
+                is_success = False
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                result = {"joined_groups": joined_groups,
+                          "invitations": invitations}
 
-                try:
-                    cur.execute("""
-                                select * from groups
-                                    where %s=any(members) or %s=owner_email;""",
-                                [user,user])
-                    joined_groups = cur.fetchall()
-                except psycopg2.ProgrammingError:
-                    pass
-
-                try:
-                    cur.execute("""
-                                select * from groups
-                                    where %s = any(invites);""",
-                                [user])
-                    invitations = cur.fetchall()
-                except psycopg2.ProgrammingError:
-                    pass
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
-            return
-
-        keys = ["groupName", "owner", "members", "invited"]
-            
-        if joined_groups is not None:
+            return {"is_success": is_success, "result": result}
+    
+        def organize_groups(keys, joined_groups, invitations):
             joined_groups = [dict((key, value) for key, value in zip(keys, x))
                                                for x in joined_groups]
-        if invitations is not None:
+    
             invitations = [dict((key, value) for key, value in zip(keys, x))
                                              for x in invitations]
-        
-        resp.status = falcon.HTTP_201
-        resp.media = {"groups": joined_groups if joined_groups is not None else [],
-                      "invites": invitations if invitations is not None else []}
-        return
 
-    def on_post(self, req, resp):
-        print(req)
-        try:
-            action = str.strip(req.media.get("action"))
+            return {"joined_groups": joined_groups, "invitations": invitations}
 
-            group_name = str.strip(req.media.get("groupName"))
-            creator_email = str.strip(req.media.get("owner"))
-            if action == "invite":
-                users = [str.strip(x)
-                         for x in req.media.get("users").split(",")]
-            if action in ("join", "remove"):
-                member_email = str.strip(req.media.get("email"))
-        except (KeyError, AssertionError, TypeError):
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "JSON Form Error"}
+        function_map = {"form_parse": form_parse,
+                        "get_membership": get_membership,
+                        "organize_groups": organize_groups}
+
+        return function_map.get(function)(*args)
+
+    def on_get(self, req, resp):
+        form = ManageGroups.get_functions("form_parse", form)
+        if not form.get("is_valid"):
+            resp.status = falcon.HTTP_406
+            resp.media = {"message": form.get("result")}
             return
 
-        try:
-            con = psycopg2.connect(CREDENTIALS)
-            with con:
-                cur = con.cursor()
-                if action == "create":
-                    cur.execute("""
-                                select exists(select * from groups
-                                    where group_name=%s and owner_email=%s);""",
-                                [group_name, creator_email])
-                    if cur.fetchone()[0]:
-                        raise psycopg2.errors.UniqueViolation
+        email = form.get("result").get("email")
+        membership = ManageGroups.get_functions("get_membership", email)
+        if not membership.get("is_success"):
+            resp.status = membership.get("result")[0]
+            resp.media = {"message": membership.get("result")[1]}
+            return
 
-                    cur.execute("""
-                                insert into groups(group_name, owner_email,
-                                                   members, invites)
-                                    values(%s, %s, %s, %s);""",
-                                [group_name, creator_email, [], []])
-                    con.commit()
+        joined_groups = membership.get("result").get("joined_groups")
+        invitations = membership.get("result").get("invitations")
+        keys = ["groupName", "owner", "members", "invited"]
+        
+        organized_groups = ManageGroups.get_functions("organize_data", keys,
+                                                      joined_groups,
+                                                      invitations)
 
-                    resp.status = falcon.HTTP_200
-                    resp.media = {"message": "Group created"}
+        resp.status = falcon.HTTP_201
+        resp.media = {"groups": organized_groups.get("joined_groups"),
+                      "invites": organized_groups.get("invitations")}
 
-                    return
-
-                if action == "delete":
-                    cur.execute("""
-                                delete from groups
-                                    where group_name = %s and owner_email = %s;
-                                """, [group_name, creator_email])
-                    con.commit()
-
-                    resp.status = falcon.HTTP_200
-                    resp.media = {"message": "Group deleted"}
-                    return
+    @staticmethod
+    def post_functions(function, *args):
+        def form_parse(form):
+            is_valid = True
+            try:
+                result = {}
+                result.put("action", str.strip(form.get("action")))
+                result.put("group_name", str.strip(form.get("groupName")))
+                result.put("creator_email", str.strip(form.get("owner")))
 
                 if action == "invite":
-                    invalid_users = []
-                    for x in users:
-                        cur.execute("""
-                                    select exists(select * from user_info
-                                        where email=%s);""",
-                                    [x])
-                        if not cur.fetchone()[0]:
-                            invalid_users.append(x)
+                    result.put("users",
+                               [str.strip(x)
+                                for x in form.get("users").split(",")])
+                elif action in ("join", "remove"):
+                    result.put("member_email", str.strip(form.get("email")))
+            except (KeyError, TypeError):
+                is_valid = False
+                result = "JSON Form Error"
 
-                    users = [x for x in users if x not in invalid_users]
-                    for x in users:
+            return {"is_valid": is_valid, "result": result}
+
+        def create_group(group_name, creator_email):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
                         cur.execute("""
                                     select exists(select * from groups
-                                        where group_name=%s and owner_email=%s
-                                        and (%s=any(invites) or
-                                             %s=any(members)));""",
-                                    [group_name, creator_email, x, x])
+                                        where group_name=%s and owner_email=%s)
+                                    """, [group_name, creator_email])
                         if cur.fetchone()[0]:
-                            invalid_users.append(x)
-                    users = [x for x in users if x not in invalid_users]
+                            raise psycopg2.errors.UniqueViolation
 
-                    cur.execute("""
-                                update groups
-                                    set invites=array_cat(invites,%s::citext[])
-                                    where group_name=%s and owner_email=%s;""",
-                                [users, group_name, creator_email])
-                    con.commit()
+                        cur.execute("""
+                                    insert into groups(group_name, owner_email,
+                                                       members, invites)
+                                        values(%s, %s, %s, %s);""",
+                                    [group_name, creator_email, [], []])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            except psycopg2.errors.UniqueViolation:
+                result = falcon.HTTP_406, "Group already exists"
+            else:
+                is_success = True
+                result = falcon.HTTP_201, "Group created successfully"
+            
+            return {"is_success": is_success, "result": result}
 
-                    resp.status = falcon.HTTP_200
-                    response = {"message": "Attempted inviting users",
-                                "valid_invitations": users}
-                    if len(invalid_users) != 0:
-                        response["invalid_invitations"] = invalid_users
-                    resp.media = response
-                    return
+        def delete_groups(group_name, owner_email):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    delete from groups
+                                        where group_name=%s and owner_email=%s;
+                                    """, [group_name, owner_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                is_success = True
+                result = falcon.HTTP_200, "Group deleted successfully"
 
-                if action == "join":
-                    cur.execute("""
-                                select exists(select * from user_info
-                                   where email=%s);""", [member_email])
-                    if not cur.fetchone()[0]:
-                        resp.status = falcon.HTTP_400
-                        resp.media = {"message": "User does not exist"}
-                        return
+            return {"is_success": is_success, "result": result}
 
-                    cur.execute("""
-                                select exists(select * from groups
-                                    where group_name=%s and owner_email=%s
-                                    and %s=any(members));""",
-                                [group_name, creator_email, member_email])
-                    if cur.fetchone()[0]:
-                        resp.status = falcon.HTTP_400
-                        resp.media = {"message": "User already in group"}
-                        return
+        def invite_to_group(group_name, owner_email, users):
+            is_success = False
+            try:
+                invalid_users = []
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        for user in users:
+                            cur.execute("""
+                                        select exists(select * from user_info
+                                            where email=%s);""",
+                                        [user])
+                            if not cur.fetchone()[0]:
+                                invalid_users.append(user)
 
-                    cur.execute("""
-                                select exists(select * from groups
-                                    where group_name=%s and owner_email=%s
-                                    and %s=any(invites));""",
-                                [group_name, creator_email, member_email])
-                    if not cur.fetchone()[0]:
-                        resp.status = falcon.HTTP_403
-                        resp.media = {"message": "User not invited to group"}
-                        return
+                            cur.execute("""
+                                        select exists(select * from groups
+                                            where group_name=%s and
+                                            owner_email=%s and
+                                            (%s=any(invites) or
+                                             %s=any(members)));""",
+                                        [group_name, creator_email,
+                                         user, user])
+                            if not cur.fetchone()[0]:
+                                invalid_users.append(user)
+                                        
+                        users = [user for user in users
+                                 if user not in invalid_users]
 
-                    cur.execute("""
-                                update groups
-                                    set invites=array_remove(invites,%s)
-                                    where group_name=%s and owner_email=%s;""",
-                                [member_email, group_name, creator_email])
-                    con.commit()
-                    cur.execute("""
-                                update groups
-                                    set members=array_append(members,%s)
-                                    where group_name=%s and owner_email=%s;""",
-                                [member_email, group_name, creator_email])
-                    con.commit()
+                        cur.execute("""
+                                    update groups
+                                        set invites=array_cat(invites,
+                                                              %s::citext)
+                                        where group_name=%s and owner_email=%s;
+                                    """, [users, group_name, creator_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                is_success = True
+                result = {"valid_invitations": users,
+                          "invalid_invitations": invalid_users}
+                result = falcon.HTTP_200, result
+            
+            return {"is_success": is_success, "result": result}
 
-                    resp.status = falcon.HTTP_200
-                    resp.media = {"message": "Joined group successfully"}
+        def join_group(group_name, owner_email, member_email):
+            is_success = False
+            try:
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    update groups
+                                        set invites=array_remove(invites,%s),
+                                            members=array_append(members,%s)
+                                        where group_name=%s and owner_email=%s
+                                            and %s=any(invites);""",
+                                    [member_email, member_email, group_name,
+                                     creator_email,member_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            else:
+                is_success = True
+                result = falcon.HTTP_200, "Joined group successfully"
 
-                if action == "remove":
-                    if member_email == creator_email:
-                        resp.status = falcon.HTTP_400
-                        resp.media = {"message": "Cannot remove owner"}
-                        return
+            return {"is_success": is_success, "result": result}
 
-                    cur.execute("""
-                                select exists(select * from groups
-                                    where group_name=%s and owner_email=%s
-                                    and (%s=any(invites) or %s=any(members)));""",
-                                [group_name, creator_email, member_email,
-                                 member_email])
-                    if not cur.fetchone()[0]:
-                        resp.status = falcon.HTTP_400
-                        resp.media = {"message": "User not in group"}
-                        return
+        def remove_from_group(group_name, owner_email, member_email):
+            is_success = False
+            try:
+                if owner_email == member_email:
+                    raise ValueError
+                with closing(psycopg2.connect(CREDENTIALS)) as con:
+                    with con, con.cursor() as cur:
+                        cur.execute("""
+                                    update groups
+                                        set invites=array_remove(invites,%s),
+                                            members=array_remove(members,%s)
+                                        where group_name=%s and owner_email=%s;
+                                    """, [member_email, member_email,
+                                          group_name, owner_email])
+            except psycopg2.OperationalError:
+                result = falcon.HTTP_503, "Generic database error"
+            except ValueError:
+                result = falcon.HTTP_406, "Cannot remove owner"
+            else:
+                is_success = True
+                result = falcon.HTTP_200, "User removed from group successfully"
 
-                    cur.execute("""
-                                update groups
-                                    set invites=array_remove(invites,%s),
-                                        members=array_remove(members,%s)
-                                    where group_name=%s and owner_email=%s;""",
-                                [member_email, member_email, group_name,
-                                 creator_email])
-                    con.commit()
-                    
-                    resp.status = falcon.HTTP_200
-                    resp.media = {"message": "User declined invite successfully"}
-                    return
-        except psycopg2.OperationalError:
-            resp.status = falcon.HTTP_503
-            resp.media = {"message": "Connection terminated"}
+            return {"is_success": is_success, "result": result}
+
+        function_map = {"create_group": create_group,
+                        "delete_group": delete_group,
+                        "invite_to_group": invite_to_group,
+                        "join_group": join_group,
+                        "remove_from_group": remove_from_group}
+        return function_map.get(function)(args)
+            
+    def on_post(self, req, resp):
+        form = ManageGroups.post_functions("form_parse", req.media)
+        if not form.get("is_valid"):
+            resp.status = falcon.HTTP_406
+            resp.media = {"message": form.get("result")}
             return
-        except psycopg2.ProgrammingError:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "Group does not exist"}
-            return
-        except psycopg2.errors.UniqueViolation:
-            resp.status = falcon.HTTP_400
-            resp.media = {"message": "Group already exists"}
-            return
+
+        form = form.get("result")        
+        action = form.get("action")
+
+        if action == "create":
+            result = ManageGroups.post_functions("create_group",
+                                                 form.get("group_name"),
+                                                 form.get("owner_email"))
+        elif action == "delete":
+            result = ManageGroups.post_functions("delete_group",
+                                                 form.get("group_name"),
+                                                 form.get("owner_email"))
+        elif action == "invite":
+            result = ManageGroups.post_functions("invite_to_group",
+                                                 form.get("group_name"),
+                                                 form.get("owner_email"),
+                                                 form.get("members"))
+        elif action == "join":
+            result = ManageGroups.post_functions("join_group",
+                                                 form.get("group_name"),
+                                                 form.get("owner_email"),
+                                                 form.get("member_email"))
+        elif action == "remove":
+            result = ManageGroups.post_functions("remove_from_group",
+                                                 form.get("group_name"),
+                                                 form.get("owner_email"),
+                                                 form.get("member_email"))
+        resp.status = result.get("result")[0]
+        resp.media = result.get("result")[1]
+        if action == "invite" and result.get("is_success"):
+            resp.media.put("message", "Attempted inviting users")
         
         
 
