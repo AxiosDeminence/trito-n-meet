@@ -41,8 +41,8 @@ public class HomeFragment extends Fragment {
 
     private ExpandableListView expandableListView;
     private ScheduleExpandableListAdapter expandableListAdapter;
-    private List<String> listEventNames;
-    private HashMap<String, Event> listEvents = new HashMap<>();
+    private List<Integer> listEventNames;
+    private HashMap<Integer, Event> listEvents = new HashMap<>();
     private int lastExpandedPosition = -1;
     private String myURL = "https://triton-meet.herokuapp.com/manageEvents";
 
@@ -117,10 +117,10 @@ public class HomeFragment extends Fragment {
                         daysOfWeek = daysOfWeek.substring(0, daysOfWeek.length() - 1);
                     }
 
-                    listEvents.put(eventName, new Event(eventID, eventName, startDate, endDate, startTime, endTime, daysOfWeek));
+                    listEvents.put(eventID, new Event(eventID, eventName, startDate, endDate, startTime, endTime, daysOfWeek));
                 }
 
-                HashMap<String, Event> sorted = sortByValue(listEvents);
+                HashMap<Integer, Event> sorted = sortByValue(listEvents);
                 listEventNames = new ArrayList<>(sorted.keySet());
                 expandableListAdapter = new ScheduleExpandableListAdapter(getActivity(), HomeFragment.this,currentUser, listEventNames, sorted);
                 expandableListView.setAdapter(expandableListAdapter);
@@ -160,23 +160,23 @@ public class HomeFragment extends Fragment {
         startActivity(i);
     }
 
-    private HashMap<String, Event> sortByValue(HashMap<String, Event> hm) {
+    private HashMap<Integer, Event> sortByValue(HashMap<Integer, Event> hm) {
 
         // Create a list from elements of HashMap
-        List<Map.Entry<String, Event> > list = new LinkedList<>(hm.entrySet());
+        List<Map.Entry<Integer, Event> > list = new LinkedList<>(hm.entrySet());
 
         // Sort the list
-        Collections.sort(list, new Comparator<Map.Entry<String, Event> >() {
-            public int compare(Map.Entry<String, Event> o1,
-                               Map.Entry<String, Event> o2)
+        Collections.sort(list, new Comparator<Map.Entry<Integer, Event> >() {
+            public int compare(Map.Entry<Integer, Event> o1,
+                               Map.Entry<Integer, Event> o2)
             {
                 return (o1.getValue()).compareTo(o2.getValue());
             }
         });
 
         // put data from sorted list to hashmap
-        HashMap<String, Event> temp = new LinkedHashMap<>();
-        for (Map.Entry<String, Event> aa : list) {
+        HashMap<Integer, Event> temp = new LinkedHashMap<>();
+        for (Map.Entry<Integer, Event> aa : list) {
             temp.put(aa.getKey(), aa.getValue());
         }
         return temp;

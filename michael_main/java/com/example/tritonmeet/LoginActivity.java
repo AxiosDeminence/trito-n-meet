@@ -99,7 +99,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
 
                 Context context = getApplicationContext();
-                CharSequence text = "Invalid account or password";
+                CharSequence text;
+                if (statusCode == 500) {
+                    text = "Internal server error; please try again";
+                }
+                else {
+                    text = "Invalid account or password";
+                }
                 int duration = Toast.LENGTH_SHORT;
 
                 Toast toast = Toast.makeText(context, text, duration);
