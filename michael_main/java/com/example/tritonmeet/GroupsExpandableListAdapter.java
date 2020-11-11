@@ -3,7 +3,9 @@ package com.example.tritonmeet;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,14 +19,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -131,6 +138,7 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
         Button inviteButton = null;
         Button leaveButton = null;
         Button deleteButton = null;
+        Button memberButton = null;
         int val;
         if (group.getOwner().equals(currentUser)) {
             val = 0;
@@ -145,14 +153,15 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
                 convertView = layoutInflater.inflate(R.layout.group1child, null);
                 viewButton = convertView.findViewById(R.id.viewButton1);
                 inviteButton = convertView.findViewById(R.id.inviteButton1);
-                leaveButton = convertView.findViewById(R.id.leaveButton1);
                 deleteButton = convertView.findViewById(R.id.deleteButton1);
+                memberButton = convertView.findViewById(R.id.memberButton1);
             }
             else {
                 convertView = layoutInflater.inflate(R.layout.group1child2, null);
                 viewButton = convertView.findViewById(R.id.viewButton1);
                 inviteButton = convertView.findViewById(R.id.inviteButton1);
                 leaveButton = convertView.findViewById(R.id.leaveButton1);
+                memberButton = convertView.findViewById(R.id.memberButton1);
             }
         }
 
@@ -188,6 +197,14 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
                 }
             });
         }
+        if (memberButton != null) {
+            memberButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    viewMembers(group, v);
+                }
+            });
+        }
 
         Animation animation = AnimationUtils.loadAnimation(context, android.R.anim.fade_in);
         convertView.startAnimation(animation);
@@ -201,10 +218,31 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
+    /**
+     * View the group schedule of that group
+     * @param group Refers to the group that you're viewing
+     * @param v View
+     */
     private void view(Group group, View v) {
-
+        ViewGroupFragment fragment = new ViewGroupFragment();
+        Bundle arguments = new Bundle();
+        arguments.putString("currentUser", currentUser);
+        arguments.putString("groupName", group.getGroupName());
+        arguments.putString("ownerEmail", group.getOwner());
+        fragment.setArguments(arguments);
+        FragmentManager manager = ((AppCompatActivity)context).getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.setCustomAnimations(android.R.anim.fade_in,
+                android.R.anim.fade_out);
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.commit();
     }
 
+    /**
+     * Invite a member to the group
+     * @param group Refers to the group that you're inviting members to
+     * @param v View
+     */
     private void invite(Group group, View v) {
         final String groupName = group.getGroupName();
         final String ownerEmail = group.getOwner();
@@ -279,6 +317,11 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
         dialogGroup.show();
     }
 
+    /**
+     * Leave the group if you're a member (only visible to members)
+     * @param group Refers to the group that you're leaving
+     * @param v View
+     */
     private void leave(Group group, View v) {
         final String groupName = group.getGroupName();
         final String ownerEmail = group.getOwner();
@@ -334,6 +377,11 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
         dialogGroup.show();
     }
 
+    /**
+     * Delete the group if you're an owner
+     * @param group Refers to the group you're deleting
+     * @param v View
+     */
     private void delete(Group group, View v) {
         final String groupName = group.getGroupName();
         final String ownerEmail = group.getOwner();
@@ -386,6 +434,95 @@ public class GroupsExpandableListAdapter extends BaseExpandableListAdapter {
             }
         });
         dialogGroup.show();
+    }
+
+    /**
+     * Open a dialog that lists the owner and members of the group
+     * @param group Refers to the group that you're viewing the members of
+     * @param v View
+     */
+    private void viewMembers(final Group group, View v) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Member list");
+        final ArrayList<String> list = new ArrayList<>();
+        list.add(group.getOwner() + " (Owner)");
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        JSONObject user;
+        StringEntity entity;
+
+        try {
+            user = new JSONObject();
+            user.put("email", currentUser);
+            entity = new StringEntity(user.toString(), "UTF-8");
+        }
+        catch (JSONException e) {
+            throw new IllegalArgumentException("unexpected error", e);
+        }
+
+        client.get(context, myURL, entity, "application/json", new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+                String stringData = new String(responseBody);
+
+                JSONObject objectData;
+                JSONArray groups;
+
+                try {
+                    objectData = new JSONObject(stringData);
+                    groups = objectData.getJSONArray("groups");
+
+                }
+                catch (JSONException e) {
+                    throw new IllegalArgumentException("unexpected error", e);
+                }
+
+                // Grab specifically the members of the group and populate them into the dialog
+                for (int i = 0; i < groups.length(); i++) {
+
+                    JSONObject groupObject;
+                    String nameOfGroup;
+                    String nameOfOwner;
+                    try {
+                        groupObject = groups.getJSONObject(i);
+                        nameOfGroup = groupObject.getString("groupName");
+                        nameOfOwner = groupObject.getString("owner");
+                        if (nameOfGroup.equals(group.getGroupName()) && nameOfOwner.equals(group.getOwner())) {
+                            String members = groupObject.getString("members");
+                            String[] memberArray = members.substring(1, members.length() - 1).split(",", 0);
+                            Collections.addAll(list, memberArray);
+
+                            String[] arrayOfMembers = new String[list.size()];
+                            for (int j = 0; j < list.size(); j++) {
+                                arrayOfMembers[j] = list.get(j);
+                            }
+
+                            builder.setItems(arrayOfMembers, null);
+
+                            builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    }
+                    catch (JSONException e) {
+                        throw new IllegalArgumentException("unexpected error", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                String data = new String(responseBody);
+                Log.d("ERROR_MESSAGE FOR GROUP", data);
+            }
+        });
     }
 
     /**

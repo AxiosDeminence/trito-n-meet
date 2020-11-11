@@ -31,15 +31,15 @@ public class ScheduleExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private HomeFragment fragment;
     private String currentUser;
-    private List<String> eventList;
-    private HashMap<String, Event> expandableList;
+    private List<Integer> eventList;
+    private HashMap<Integer, Event> expandableList;
     private String myURL = "https://triton-meet.herokuapp.com/manageEvents";
 
     public ScheduleExpandableListAdapter(Context context,
                                          HomeFragment fragment,
                                          String currentUser,
-                                         List<String> eventList,
-                                         HashMap<String, Event> expandableList) {
+                                         List<Integer> eventList,
+                                         HashMap<Integer, Event> expandableList) {
         this.context = context;
         this.fragment = fragment;
         this.currentUser = currentUser;
@@ -93,19 +93,21 @@ public class ScheduleExpandableListAdapter extends BaseExpandableListAdapter {
 
         TextView eventName = convertView.findViewById(R.id.eventName);
         TextView eventDate = convertView.findViewById(R.id.eventDate);
+        TextView eventTime = convertView.findViewById(R.id.eventTime);
         TextView repeating = convertView.findViewById(R.id.repeating);
 
         eventName.setText(event.getEventName());
         if (event.getStartDate().equals(event.getEndDate())) {
-            String dateTime1 = event.getStartDate() +  "                             " +
-                    Event.time24to12(event.getStartTime()) + " - " + Event.time24to12(event.getEndTime());
-            eventDate.setText(dateTime1);
+            String date1 = event.getStartDate();
+            eventDate.setText(date1);
         }
         else {
-            String dateTime2 = event.getStartDate() + " - " + event.getEndDate() + "    " +
-                    Event.time24to12(event.getStartTime()) + " - " + Event.time24to12(event.getEndTime());
-            eventDate.setText(dateTime2);
+            String date2 = event.getStartDate() + " - " + event.getEndDate();
+            eventDate.setText(date2);
         }
+
+        String time =  Event.time24to12(event.getStartTime()) + " - " + Event.time24to12(event.getEndTime());
+        eventTime.setText(time);
 
         if (event.getStartDate().equals(event.getEndDate())) {
             repeating.setText("One day event");
@@ -118,7 +120,13 @@ public class ScheduleExpandableListAdapter extends BaseExpandableListAdapter {
                 repeating.setText("One time event");
             }
             else {
-                repeating.setText(event.getWeekly());
+                String[] weekly = event.getWeekly().split(",", 0);
+                String weeklyString = "";
+
+                for (String s : weekly) {
+                    weeklyString += s + ", ";
+                }
+                repeating.setText(weeklyString.substring(0, weeklyString.length() - 2));
             }
         }
         return convertView;

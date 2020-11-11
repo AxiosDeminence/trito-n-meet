@@ -33,11 +33,21 @@
         </TextView>
 
         <TextView
+            android:id="@+id/eventTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="15sp"
+            android:textColor="@color/colorAccent"
+            android:text="Placeholder 3">
+        </TextView>
+
+        <TextView
             android:id="@+id/repeating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:text="Placeholder 4">
         </TextView>
 

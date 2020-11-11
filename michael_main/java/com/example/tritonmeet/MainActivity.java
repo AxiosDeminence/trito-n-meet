@@ -70,13 +70,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new com.example.tritonmeet.InvitesFragment()).commit();
                 break;
-            case R.id.nav_settings:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new com.example.tritonmeet.SettingsFragment()).commit();
-                break;
             case R.id.nav_help:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new com.example.tritonmeet.HelpFragment()).commit();
+                break;
+            case R.id.nav_logout:
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(i);
+                finish();
                 break;
         }
 

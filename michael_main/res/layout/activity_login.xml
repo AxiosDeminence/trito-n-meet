@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorLight"
     tools:context=".LoginActivity">
 
     <Button
@@ -15,7 +16,7 @@
         android:layout_marginEnd="88dp"
         android:background="@color/colorPrimary"
         android:text="@string/button_label_login"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,6 +34,7 @@
         android:focusable="true"
         android:text="@string/text_name_register"
         android:textSize="16sp"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,6 +48,7 @@
         android:ems="10"
         android:hint="@string/hint_name_email"
         android:inputType="textEmailAddress"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,6 +63,7 @@
         android:ems="10"
         android:hint="@string/hint_name_pass"
         android:inputType="textPassword"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loginEmail" />

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -19,9 +18,10 @@
             android:layout_margin="3dp"
             android:layout_weight="1"
             android:background="@color/colorPrimary"
-            android:onClick="view"
             android:text="@string/view"
-            android:textColor="#FFFFFF"></Button>
+            android:textSize="13sp"
+            android:textColor="#FFFFFF">
+        </Button>
 
         <Button
             android:id="@+id/inviteButton1"
@@ -31,7 +31,9 @@
             android:layout_weight="1"
             android:background="@color/colorPrimaryDark"
             android:text="@string/invite"
-            android:textColor="#FFFFFF"></Button>
+            android:textSize="13sp"
+            android:textColor="#FFFFFF">
+        </Button>
 
         <Button
             android:id="@+id/leaveButton1"
@@ -39,9 +41,25 @@
             android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:layout_weight="1"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorAccent"
             android:text="@string/leave"
-            android:textColor="#FFFFFF"></Button>
+            android:textSize="13sp"
+            android:textColor="#FFFFFF">
+        </Button>
+
+        <Button
+            android:id="@+id/memberButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:background="@color/colorAccent2"
+            android:text="@string/members"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF">
+        </Button>
+
+
     </LinearLayout>
 
 </LinearLayout>

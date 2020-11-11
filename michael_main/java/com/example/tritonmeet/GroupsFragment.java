@@ -81,7 +81,7 @@ public class GroupsFragment extends Fragment {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
 
-                // Parse JSON Object and populate hash map
+                // Parse JSON Object and populate hash map with info
                 String stringData = new String(responseBody);
                 Log.i("Group JSON Object", stringData);
 
@@ -113,8 +113,9 @@ public class GroupsFragment extends Fragment {
                     listGroups.put(nameOfGroup, new Group(nameOfGroup, nameOfOwner, getActivity()));
                 }
 
+                // Sort groups alphabetically and populate list view
                 expandableListNames = new ArrayList<>(listGroups.keySet());
-                Collections.sort(expandableListNames);
+                Collections.sort(expandableListNames, String.CASE_INSENSITIVE_ORDER);
                 expandableListAdapter = new GroupsExpandableListAdapter(getActivity(), GroupsFragment.this,currentUser, expandableListNames, listGroups);
                 expandableListView.setAdapter(expandableListAdapter);
             }
@@ -148,6 +149,10 @@ public class GroupsFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Creates a dialog that allows user to input name and create group
+     * @param view view
+     */
     private void createGroup(View view) {
 
         // Creates necessary elements of the dialog with input limit of length 30

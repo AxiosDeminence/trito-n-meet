@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorLight"
     tools:context=".HelpFragment">
 
     <LinearLayout
@@ -14,6 +15,7 @@
             android:id="@+id/tutorialText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:textColor="@color/colorPrimaryDark"
             android:text="@string/large_text"
             android:padding="32dp"/>
 

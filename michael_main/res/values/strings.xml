@@ -19,16 +19,17 @@
     <string name="cpassword">Confirm password</string>
     <string name="fullname">Full Name</string>
     <string name="register">Register</string>
-    <string name="check1">Placeholder 2</string>
-    <string name="usercheck1">Placeholder 1</string>
-    <string name="emailcheck1">Placeholder 2</string>
-    <string name="passwordcheck1">Placeholder 3</string>
     <string name="passCheck">At least 6 characters with at least 1: uppercase, lowercase, number, symbol</string>
     <string name="emailCheck2">Email Check</string>
     <string name="view">View</string>
     <string name="invite">Invite</string>
     <string name="leave">Leave</string>
     <string name="delete">Delete</string>
+    <string name="members">Members</string>
+    <string name="placeholder">Placeholder</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="is_repeating">Repeating?</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_add_event">Add Event</string>
@@ -60,15 +61,15 @@
         "classmates! To share, first form a group by going to the navigation tab on the side "
         "and then GROUPS. You are allowed to create at most five different groups - each with its "
         "own unique name - but you can be a part of as many groups as you like. To add people to "
-        "a group, input their UCSD e-mails.\n\n"
+        "a group, input their UCSD emails.\n\n"
 
-        "Additionally, Instead of creating your own group, your classmates can add you to their "
+        "Additionally, instead of creating your own group, your classmates can add you to their "
         "own groups. Turn on notifications to receive a message when somebody tries to add you. "
         "To accept the invitation, simply accept it. Otherwise, please press decline.\n\n"
 
         "Thank you for downloading this app! We hope you will enjoy Triton Meet and use it to "
-        "plan hang-outs, group projects, and other events. For more information or to leave "
-        "suggestions, please contact tritonmeet@gmail.com.“
+        "plan hang-outs, group projects, and other events. Contact tritonmeet@gmail.com "
+        "to get help, reset your password, or leave suggestions.\n\n"
     </string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

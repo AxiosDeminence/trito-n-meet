@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/colorLight"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AddEventActivity">
@@ -13,12 +14,13 @@
         android:layout_width="188dp"
         android:layout_height="29dp"
         android:text="Name of Event"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.094"
+        app:layout_constraintHorizontal_bias="0.071"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.115" />
+        app:layout_constraintVertical_bias="0.025" />
 
     <EditText
         android:id="@+id/enterEventName"
@@ -26,116 +28,127 @@
         android:layout_height="wrap_content"
         android:ems="18"
         android:maxLength="30"
+        android:textColor="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.592"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.151" />
+        app:layout_constraintTop_toBottomOf="@id/textView7"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/textView6"
         android:layout_width="153dp"
         android:layout_height="wrap_content"
-        android:text="Repeating?"
+        android:text="@string/is_repeating"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.124"
+        app:layout_constraintRight_toLeftOf="@id/spinner1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.555" />
+        app:layout_constraintVertical_bias="0.568" />
 
     <TextView
         android:id="@+id/startDateText"
-        android:layout_width="160dp"
-        android:layout_height="40dp"
-        android:layout_marginLeft="35dp"
-        android:text="Date"
-        android:textAlignment="center"
+        android:layout_width="100dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="68dp"
+        android:text="@string/date"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="20sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pickStartDate" />
 
     <TextView
         android:id="@+id/endDateText"
-        android:layout_width="160dp"
-        android:layout_height="40dp"
-        android:layout_marginRight="35dp"
-        android:text="Date"
-        android:textAlignment="center"
+        android:layout_width="100dp"
+        android:layout_height="31dp"
+        android:text="@string/date"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/pickEndDate"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintHorizontal_bias="0.524"
+        app:layout_constraintLeft_toRightOf="@id/startDateText"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pickEndDate" />
+
     <TextView
         android:id="@+id/startTimeText"
-        android:layout_width="160dp"
-        android:layout_height="40dp"
-        android:layout_marginLeft="35dp"
-        android:text="Time"
-        android:textAlignment="center"
+        android:layout_width="100dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="68dp"
+        android:text="@string/time"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/pickStartTime"
-        app:layout_constraintLeft_toLeftOf="parent"/>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pickStartTime" />
 
     <TextView
         android:id="@+id/endTimeText"
-        android:layout_width="160dp"
-        android:layout_height="40dp"
-        android:layout_marginRight="35dp"
-        android:text="Time"
-        android:textAlignment="center"
+        android:layout_width="100dp"
+        android:layout_height="31dp"
+        android:text="@string/time"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@+id/pickEndTime"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintHorizontal_bias="0.524"
+        app:layout_constraintLeft_toRightOf="@id/startTimeText"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pickEndTime" />
 
     <Button
         android:id="@+id/pickStartDate"
         android:layout_width="110dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="444dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
         android:text="Start Date"
-        android:background="@color/colorPrimaryDark"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/pickEndDate" />
+        app:layout_constraintRight_toLeftOf="@+id/pickEndDate"
+        app:layout_constraintTop_toBottomOf="@id/enterEventName"
+        app:layout_constraintVertical_bias="0.052" />
 
     <Button
         android:id="@+id/pickEndDate"
         android:layout_width="110dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="444dp"
+        android:background="@color/colorPrimary"
         android:text="End Date"
-        android:background="@color/colorPrimaryDark"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/pickStartDate"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/enterEventName"
+        app:layout_constraintVertical_bias="0.052" />
 
     <Button
         android:id="@+id/pickStartTime"
         android:layout_width="110dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="364dp"
+        android:background="@color/colorPrimary"
         android:text="Start Time"
-        android:background="@color/colorPrimaryDark"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/pickEndTime" />
+        app:layout_constraintRight_toLeftOf="@+id/pickEndTime"
+        app:layout_constraintTop_toBottomOf="@id/startDateText"
+        app:layout_constraintVertical_bias="0.012" />
 
     <Button
         android:id="@+id/pickEndTime"
         android:layout_width="110dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="364dp"
+        android:background="@color/colorPrimary"
         android:text="End Time"
-        android:background="@color/colorPrimaryDark"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/pickStartTime"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/endDateText"
+        app:layout_constraintVertical_bias="0.012" />
 
     <Spinner
         android:id="@+id/spinner1"
@@ -144,16 +157,18 @@
         android:entries="@array/names"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.609"
+        app:layout_constraintHorizontal_bias="0.7"
+        app:layout_constraintLeft_toRightOf="@id/textView6"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView6"
-        app:layout_constraintVertical_bias="0.01" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <CheckBox
         android:id="@+id/monday"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Monday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -167,6 +182,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Tuesday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -180,6 +196,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Wednesday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -193,6 +210,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Thursday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -206,6 +224,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Friday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -219,6 +238,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Saturday"
+        android:textColor="@color/colorPrimaryDark"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

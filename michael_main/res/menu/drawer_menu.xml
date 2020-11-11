@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:tools="http://schemas.android.com/tools"
+<menu
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group android:checkableBehavior="single"
+        android:id="@+id/main">
         <item android:id="@+id/nav_home"
         android:icon="@drawable/ic_home_black_24dp"
         android:title="Home" />
@@ -13,12 +15,17 @@
         <item android:id="@+id/nav_invitations"
             android:icon="@drawable/ic_mail_black_24dp"
             android:title="Invitations" />
-        <item android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_settings_applications_black_24dp"
-            android:title="Settings" />
         <item android:id="@+id/nav_help"
             android:icon="@drawable/ic_help_black_24dp"
             android:title="Help" />
     </group>
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/submain">
+        <item android:id="@+id/nav_logout"
+            android:icon="@drawable/baseline_exit_to_app_black_24dp"
+            android:title="Logout" />
+    </group>
+
 
 </menu>
