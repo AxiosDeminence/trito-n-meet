@@ -6,11 +6,13 @@ import falcon
 import psycopg2
 import argon2
 
-DATABASE = "d814roat3puk53"
-USER = "evsifgooyevaft"
-PASSWORD = "80f763bb1196c19be42f375323dedbfd6080cdec0605f12a689c5b51880505d2"
-HOST = "ec2-107-20-243-220.compute-1.amazonaws.com"
-PORT = "5432"
+from decouple import Config
+
+DATABASE = Config("DATABASE")
+USER = Config("USER")
+PASSWORD = Config("PASSWORD")
+HOST = Config("HOST")
+PORT = Config("PORT")
 
 CREDENTIALS = ("dbname=%s user=%s password=%s host=%s port=%s"
                % (DATABASE, USER, PASSWORD, HOST, PORT))
